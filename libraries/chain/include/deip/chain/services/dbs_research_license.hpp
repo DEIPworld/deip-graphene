@@ -32,6 +32,8 @@ public:
 
     const research_license_object& get_research_license(const external_id_type& external_id) const;
 
+    const research_license_object& get_research_licenses(const set<external_id_type>& external_ids) const;
+
     const research_license_refs_type get_research_licenses_by_licenser(const account_name_type& licenser) const;
 
     const research_license_optional_ref_type get_research_license_if_exists(const external_id_type& external_id) const;

@@ -550,6 +550,7 @@
   "research_groups": [
     {
       "account": "0000000000000000000000000000000000000000",
+      "public_key": "DEIP6gBwv3yQeUfnXxUdxxeynNvpbXU8iNSS46GP9mhFRfDvnp9PJT",
       "creator": "alice",
       "description": "94c70f3ca2398ac96f730c505ca6f8737c264f86c9a3e25c27ede7b127d2d702",
       "members": [
@@ -609,6 +610,7 @@
     },
     {
       "account": "58e3bfd753fcb860a66b82635e43524b285ab708",
+      "public_key": "DEIP7WaVkyRVPkojAT1YVknt6ph6k2uoRGZs4jYYWThPXurYCM7CPX",
       "creator": "peter",
       "description": "a7dc26b52119d2a68d27692ace9b3a256dcfa6a2ed862327f95876d41c5c55a8",
       "members": [
@@ -626,6 +628,7 @@
     },
     {
       "account": "c8a87b12c23f53866acd397f43b591fd4e631419",
+      "public_key": "DEIP7a1XdvQePkhUXR5q8TAStfZMmn2n4EPayNDxpNfVMkHZNqnxTz",
       "creator": "rachel",
       "description": "90a373f15c0d7652bd21e7f0f8d6cbda1e795ff637535272d84d10e1aa44a467",
       "members": [
@@ -635,6 +638,7 @@
     },
     {
       "account": "1169d704f8a908016033efe8cce6df93f618a265",
+      "public_key": "DEIP5s7Ud4kr4wDsnMRXsRKYw1jqtv5CjTZz2aZqYGAobKLZjGNLzq",
       "creator": "kim",
       "description": "6dfd366f0e402dfcefcb0aee1d9f249cc69f5f5740f6c6829e13f6740ca9d4c8",
       "members": [

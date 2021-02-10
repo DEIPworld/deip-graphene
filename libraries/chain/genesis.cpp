@@ -666,6 +666,12 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
         active_authority.add_authority(account_name_type(member.name), 1);
     }
 
+    if (research_group.public_key != public_key_type()) 
+    {
+        owner_authority.add_authority(public_key_type(research_group.public_key), 1);
+        active_authority.add_authority(public_key_type(research_group.public_key), 1);
+    }
+
     research_group_trait rg_trait;
     rg_trait.description = research_group.description;
 

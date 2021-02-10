@@ -289,6 +289,7 @@ public:
     // Research licenses //
     ///////////////////////
     fc::optional<research_license_api_obj> get_research_license(const external_id_type& external_id) const;
+    vector<research_license_api_obj> get_research_licenses(const set<external_id_type>& ids) const;
     vector<research_license_api_obj> get_research_licenses_by_licensee(const account_name_type& licensee) const;
     vector<research_license_api_obj> get_research_licenses_by_licenser(const account_name_type& licenser) const;
     vector<research_license_api_obj> get_research_licenses_by_research(const external_id_type& research_external_id) const;
@@ -597,6 +598,7 @@ FC_API(deip::app::database_api,
 
    // Research license
    (get_research_license)
+   (get_research_licenses)
    (get_research_licenses_by_licensee)
    (get_research_licenses_by_licenser)
    (get_research_licenses_by_research)

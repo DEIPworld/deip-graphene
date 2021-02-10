@@ -121,6 +121,7 @@ public:
 
     // Research license
     fc::optional<research_license_api_obj> get_research_license(const external_id_type& external_id) const;
+    vector<research_license_api_obj> get_research_licenses(const set<external_id_type>& ids) const;
     vector<research_license_api_obj> get_research_licenses_by_licensee(const account_name_type& licensee) const;
     vector<research_license_api_obj> get_research_licenses_by_licenser(const account_name_type& licenser) const;
     vector<research_license_api_obj> get_research_licenses_by_research(const external_id_type& research_external_id) const;
@@ -1313,6 +1314,30 @@ fc::optional<research_license_api_obj> database_api_impl::get_research_license(c
         result = research_license_api_obj(research_license);
     }
     return result;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses(const set<external_id_type>& ids) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses(ids); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses(const set<external_id_type>& ids) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    for (const auto& external_id : ids)
+    {
+        const auto& research_license_opt = research_license_service.get_research_license_if_exists(external_id);
+        if (research_license_opt.valid())
+        {
+            const research_license_object& research_license = *research_license_opt;
+            results.push_back(research_license_api_obj(research_license));
+        }
+    }
+
+    return results;
 }
 
 
