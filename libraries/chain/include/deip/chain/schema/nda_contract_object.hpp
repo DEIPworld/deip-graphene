@@ -75,6 +75,7 @@ FC_REFLECT( deip::chain::nda_contract_object,
              (id)
              (external_id)
              (creator)
+             (parties)
              (description)
              (research_external_id)
              (created_at)
