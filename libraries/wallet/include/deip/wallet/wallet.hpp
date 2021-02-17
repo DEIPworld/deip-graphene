@@ -1024,8 +1024,8 @@ public:
                                               const uint16_t& min_number_of_positive_reviews,
                                               const uint16_t& min_number_of_applications,
                                               const uint16_t& max_number_of_research_to_grant,
-                                              const uint32_t& start_date,
-                                              const uint32_t& end_date,
+                                              const uint32_t& start_time,
+                                              const uint32_t& end_time,
                                               const bool broadcast);
 
     annotated_signed_transaction create_grant_application(const std::string& funding_opportunity_number,

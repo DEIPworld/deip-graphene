@@ -1295,21 +1295,14 @@ struct nda_contract_api_obj
 {
     nda_contract_api_obj(const chain::nda_contract_object& c_o)
         : id(c_o.id._id)
-        , contract_creator(c_o.contract_creator)
-        , party_a(c_o.party_a)
-        , party_a_research_group_id(c_o.party_a_research_group_id._id)
-        , party_b(c_o.party_b)
-        , party_b_research_group_id(c_o.party_b_research_group_id._id)
-        , disclosing_party(c_o.disclosing_party.begin(), c_o.disclosing_party.end())
-        , party_a_signature(fc::to_string(c_o.party_a_signature))
-        , party_b_signature(fc::to_string(c_o.party_b_signature))
-        , title(fc::to_string(c_o.title))
-        , contract_hash(fc::to_string(c_o.contract_hash))
-        , status(c_o.status)
+        , external_id(c_o.external_id)
+        , creator(c_o.creator)
+        , parties(c_o.parties.begin(), c_o.parties.end())
+        , description(fc::to_string(c_o.description))
+        , research_external_id(c_o.research_external_id)
         , created_at(c_o.created_at)
-        , start_date(c_o.start_date)
-        , end_date(c_o.end_date)
-
+        , start_time(c_o.start_time)
+        , end_time(c_o.end_time)
     {}
 
     // because fc::variant require for temporary object
@@ -1318,33 +1311,24 @@ struct nda_contract_api_obj
     }
 
     int64_t id;
-    account_name_type contract_creator;
+    external_id_type external_id;
+    account_name_type creator;
+    std::set<account_name_type> parties;
 
-    account_name_type party_a;
-    int64_t party_a_research_group_id;
-
-    account_name_type party_b;
-    int64_t party_b_research_group_id;
-
-    std::set<account_name_type> disclosing_party;
-
-    std::string party_a_signature;
-    std::string party_b_signature;
-
-    std::string title;
-    std::string contract_hash;
-    uint16_t status;
+    std::string description;
+    external_id_type research_external_id;
 
     fc::time_point_sec created_at;
-    fc::time_point_sec start_date;
-    fc::time_point_sec end_date;
+    fc::time_point_sec start_time;
+    fc::time_point_sec end_time;
 };
 
 struct nda_contract_file_access_api_obj
 {
     nda_contract_file_access_api_obj(const chain::nda_contract_file_access_object& cfa_o)
         : id(cfa_o.id._id)
-        , contract_id(cfa_o.contract_id._id)
+        , external_id(cfa_o.external_id)
+        , nda_external_id(cfa_o.nda_external_id)
         , status(cfa_o.status)
         , requester(cfa_o.requester)
         , encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
@@ -1360,7 +1344,8 @@ struct nda_contract_file_access_api_obj
     }
 
     int64_t id;
-    int64_t contract_id;
+    external_id_type external_id;
+    external_id_type nda_external_id;
     uint16_t status;
 
     account_name_type requester;
@@ -1803,26 +1788,20 @@ FC_REFLECT( deip::app::award_withdrawal_request_api_obj,
 
 FC_REFLECT( deip::app::nda_contract_api_obj,
             (id)
-            (contract_creator)
-            (party_a)
-            (party_a_research_group_id)
-            (party_a_signature)
-            (party_b)
-            (party_b_research_group_id)
-            (party_b_signature)
-            (disclosing_party)
-            (title)
-            (contract_hash)
-            (status)
+            (external_id)
+            (creator)
+            (parties)
+            (description)
+            (research_external_id)
             (created_at)
-            (start_date)
-            (end_date)
-
+            (start_time)
+            (end_time)
 )
 
 FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (id)
-            (contract_id)
+            (external_id)
+            (nda_external_id)
             (status)
             (requester)
             (encrypted_payload_hash)

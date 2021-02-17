@@ -4,12 +4,14 @@
 namespace deip {
 namespace protocol {
 
-struct fulfill_request_by_nda_contract_operation : public base_operation
+using deip::protocol::external_id_type;
+
+struct fulfill_nda_content_access_request_operation : public base_operation
 {
+    external_id_type external_id;
     account_name_type grantor;
-    std::string encrypted_payload_encryption_key;
-    std::string proof_of_encrypted_payload_encryption_key;
-    int64_t request_id;
+    string encrypted_payload_encryption_key;
+    string proof_of_encrypted_payload_encryption_key;
 
     extensions_type extensions;
 
@@ -24,10 +26,10 @@ struct fulfill_request_by_nda_contract_operation : public base_operation
 }
 }
 
-FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation,
+FC_REFLECT( deip::protocol::fulfill_nda_content_access_request_operation,
+    (external_id)
     (grantor)
     (encrypted_payload_encryption_key)
     (proof_of_encrypted_payload_encryption_key)
-    (request_id)
     (extensions)
 )

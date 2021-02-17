@@ -9,7 +9,6 @@ namespace protocol {
 
 void decline_nda_contract_operation::validate() const
 {
-    validate_account_name(decliner);
 }
 
 } /* deip::protocol */

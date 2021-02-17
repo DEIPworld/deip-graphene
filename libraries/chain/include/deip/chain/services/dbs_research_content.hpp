@@ -27,7 +27,7 @@ public:
     const research_content_object& create_research_content(const research_group_object& research_group,
                                                            const research_object& research,
                                                            const external_id_type& external_id,
-                                                           const std::string& title,
+                                                           const std::string& description,
                                                            const std::string& content,
                                                            const research_content_type& type,
                                                            const flat_set<account_name_type>& authors,

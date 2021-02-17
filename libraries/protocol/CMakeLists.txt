@@ -20,12 +20,12 @@ add_library( deip_protocol
              operations/approve_award_withdrawal_request_operation.cpp
              operations/reject_award_withdrawal_request_operation.cpp
              operations/pay_award_withdrawal_request_operation.cpp
-             operations/create_nda_contract_operation.cpp
+             operations/create_research_nda_operation.cpp
              operations/sign_nda_contract_operation.cpp
              operations/decline_nda_contract_operation.cpp
              operations/close_nda_contract_operation.cpp
-             operations/create_request_by_nda_contract_operation.cpp
-             operations/fulfill_request_by_nda_contract_operation.cpp
+             operations/create_nda_content_access_request_operation.cpp
+             operations/fulfill_nda_content_access_request_operation.cpp
              operations/join_research_group_membership_operation.cpp
              operations/leave_research_group_membership_operation.cpp
              operations/create_research_operation.cpp

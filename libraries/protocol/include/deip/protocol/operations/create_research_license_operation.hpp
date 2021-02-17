@@ -29,7 +29,6 @@ struct create_research_license_operation : public entity_operation
     external_id_type research_external_id;
     account_name_type licenser;
     account_name_type licensee;
-
     license_agreement_types license_conditions;
 
     extensions_type extensions;

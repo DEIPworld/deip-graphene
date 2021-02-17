@@ -1750,12 +1750,12 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<approve_award_withdrawal_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_award_withdrawal_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<pay_award_withdrawal_request_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_nda_evaluator>();
     _my->_evaluator_registry.register_evaluator<sign_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<decline_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_nda_content_access_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<fulfill_nda_content_access_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<join_research_group_membership_evaluator>();
     _my->_evaluator_registry.register_evaluator<leave_research_group_membership_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
@@ -1811,7 +1811,7 @@ void database::initialize_indexes()
     add_index<award_recipient_index>();
     add_index<award_withdrawal_request_index>();
     add_index<nda_contract_index>();
-    add_index<nda_contract_file_access_index>();
+    add_index<nda_contract_content_access_index>();
     add_index<assessment_index>();
     add_index<assessment_stage_index>();
     add_index<assessment_stage_phase_index>();

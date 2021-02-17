@@ -17,12 +17,12 @@
 #include <deip/protocol/operations/approve_award_withdrawal_request_operation.hpp>
 #include <deip/protocol/operations/reject_award_withdrawal_request_operation.hpp>
 #include <deip/protocol/operations/pay_award_withdrawal_request_operation.hpp>
-#include <deip/protocol/operations/create_nda_contract_operation.hpp>
+#include <deip/protocol/operations/create_research_nda_operation.hpp>
 #include <deip/protocol/operations/sign_nda_contract_operation.hpp>
 #include <deip/protocol/operations/decline_nda_contract_operation.hpp>
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
-#include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
-#include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
+#include <deip/protocol/operations/create_nda_content_access_request_operation.hpp>
+#include <deip/protocol/operations/fulfill_nda_content_access_request_operation.hpp>
 #include <deip/protocol/operations/join_research_group_membership_operation.hpp>
 #include <deip/protocol/operations/leave_research_group_membership_operation.hpp>
 #include <deip/protocol/operations/create_research_operation.hpp>
