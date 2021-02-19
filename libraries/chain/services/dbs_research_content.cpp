@@ -1,5 +1,4 @@
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/util/permlink.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_review.hpp>
@@ -29,14 +28,12 @@ const research_content_object& dbs_research_content::create_research_content(
 {
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
-    const auto& research_content_permlink = deip::chain::util::generate_permlink(description);
     const auto& research_content = db_impl().create<research_content_object>([&](research_content_object& rc_o) {
         rc_o.research_id = research.id;
         rc_o.research_external_id = research.external_id;
         rc_o.external_id = external_id;
         fc::from_string(rc_o.description, description);
         fc::from_string(rc_o.content, content);
-        fc::from_string(rc_o.permlink, research_content_permlink);
         rc_o.type = type;
         rc_o.authors.insert(authors.begin(), authors.end());
         rc_o.references.insert(references.begin(), references.end());   
@@ -117,54 +114,7 @@ const dbs_research_content::research_content_optional_ref_type dbs_research_cont
     return result;
 }
 
-/* [DEPRECATED] */
-const research_content_object& dbs_research_content::get_research_content_by_permlink(const string& research_group_permlink,
-                                                                                      const string& research_permlink,
-                                                                                      const string& research_content_permlink) const
-{
 
-    const auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
-    const auto& research_service = db_impl().obtain_service<dbs_research>();
-
-    const auto& research_group = research_groups_service.get_research_group_by_permlink(research_group_permlink);
-    const auto& research = research_service.get_research_by_permlink(fc::to_string(research_group.permlink), research_permlink);
-
-    const auto& idx = db_impl()
-      .get_index<research_content_index>()
-      .indices()
-      .get<by_permlink>();
-
-    auto itr = idx.find(std::make_tuple(research.id, research_content_permlink));
-    FC_ASSERT(itr != idx.end(), "Research content with permlink ${1} is not found", ("1", research_content_permlink));
-    return *itr;
-}
-
-/* [DEPRECATED] */
-const dbs_research_content::research_content_optional_ref_type dbs_research_content::get_research_content_by_permlink_if_exists(const string& research_group_permlink,
-                                                                                                                                const string& research_permlink,
-                                                                                                                                const string& research_content_permlink) const
-{
-    research_content_optional_ref_type result;
-
-    const auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
-    const auto& research_service = db_impl().obtain_service<dbs_research>();
-
-    const auto& research_group = research_groups_service.get_research_group_by_permlink(research_group_permlink);
-    const auto& research = research_service.get_research_by_permlink(fc::to_string(research_group.permlink), research_permlink);
-
-    const auto& idx = db_impl()
-      .get_index<research_content_index>()
-      .indices()
-      .get<by_permlink>();
-
-    auto itr = idx.find(std::make_tuple(research.id, research_content_permlink));
-    if (itr != idx.end())
-    {
-        result = *itr;
-    }
-
-    return result;
-}
 
 dbs_research_content::research_content_refs_type dbs_research_content::get_research_content_by_research_id(const research_id_type& research_id) const
 {

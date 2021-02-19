@@ -27,14 +27,12 @@ class research_group_service_fixture : public clean_database_fixture
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 21;
             d.name = "test21";
-            d.permlink = "test21";
             d.description = "test";
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 22;
             d.name = "test22";
-            d.permlink = "test22";
             d.description = "test";
           });
     }
@@ -124,7 +122,6 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         auto& research_group = data_service.get_research_group(21);
 
         BOOST_CHECK(research_group.name == "test21");
-        BOOST_CHECK(research_group.permlink == "test21");
         BOOST_CHECK(research_group.description == "test");
     }
     FC_LOG_AND_RETHROW()

@@ -381,7 +381,6 @@ struct research_group_api_obj
         : id(rg_o.id._id)
         , external_id(rg_o.account)
         , creator(rg_o.creator)
-        , permlink(fc::to_string(rg_o.permlink))
         , description(fc::to_string(rg_o.description))
         , quorum_percent(rg_o.default_quorum)
         , is_dao(rg_o.is_dao)
@@ -395,7 +394,6 @@ struct research_group_api_obj
         : id(rg_o.id._id)
         , external_id(rg_o.account)
         , creator(rg_o.creator)
-        , permlink(fc::to_string(rg_o.permlink))
         , description(fc::to_string(rg_o.description))
         , quorum_percent(rg_o.default_quorum)
         , is_dao(rg_o.is_dao)
@@ -412,7 +410,6 @@ struct research_group_api_obj
     int64_t id;
     external_id_type external_id;
     account_name_type creator;
-    std::string permlink;
     std::string description;
     percent_type quorum_percent;
     bool is_dao;
@@ -431,7 +428,6 @@ struct research_api_obj
         , external_id(r_o.external_id)
         , research_group_id(r_o.research_group_id._id)
         , description(fc::to_string(r_o.description))
-        , permlink(fc::to_string(r_o.permlink))
         , is_finished(r_o.is_finished)
         , is_private(r_o.is_private)
         , created_at(r_o.created_at)
@@ -473,7 +469,6 @@ struct research_api_obj
     external_id_type external_id;
     int64_t research_group_id;
     std::string description;
-    std::string permlink;
     bool is_finished;
     bool is_private;
     time_point_sec created_at;
@@ -505,7 +500,6 @@ struct research_content_api_obj
         , authors(rc_o.authors.begin(), rc_o.authors.end())
         , description(fc::to_string(rc_o.description))
         , content(fc::to_string(rc_o.content))
-        , permlink(fc::to_string(rc_o.permlink))
         , activity_state(rc_o.activity_state)
         , activity_window_start(rc_o.activity_window_start)
         , activity_window_end(rc_o.activity_window_end)
@@ -535,7 +529,6 @@ struct research_content_api_obj
     std::set<account_name_type> authors;
     std::string description;
     std::string content;
-    std::string permlink;
     research_content_activity_state activity_state;
     fc::time_point_sec activity_window_start;
     fc::time_point_sec activity_window_end;
@@ -1464,7 +1457,6 @@ FC_REFLECT( deip::app::research_api_obj,
             (external_id)
             (research_group_id)
             (description)
-            (permlink)
             (is_finished)
             (is_private)
             (created_at)
@@ -1489,7 +1481,6 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (content_type)
             (description)
             (content)
-            (permlink)
             (authors)
             (activity_state)
             (activity_window_start)
@@ -1553,7 +1544,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (id)
             (external_id)
             (creator)
-            (permlink)
             (description)
             (quorum_percent)
             (is_dao)

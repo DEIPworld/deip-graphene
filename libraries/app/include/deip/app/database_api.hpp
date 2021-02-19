@@ -255,8 +255,6 @@ public:
     vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
     vector<research_group_api_obj> get_research_groups_by_member(const account_name_type& member) const;
     /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
-    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
-    /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
     vector<research_group_api_obj> lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
 
     ////////////////
@@ -265,9 +263,6 @@ public:
     fc::optional<research_api_obj> get_research(const external_id_type& id) const;
     vector<research_api_obj> get_researches(const set<external_id_type>& ids) const;
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
-    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
-    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
-    /* [DEPRECATED] */ bool check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& title) const;
     vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
     vector<research_api_obj> get_researches_by_research_group_member(const account_name_type& member) const;
     vector<research_api_obj> lookup_researches(const research_id_type& lower_bound, uint32_t limit) const;
@@ -278,9 +273,6 @@ public:
     fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
     vector<research_content_api_obj> get_research_contents(const set<external_id_type>& ids) const;
     fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
-    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
-    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
-    /* [DEPRECATED] */ bool check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const;
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
     vector<research_content_api_obj> lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const;
@@ -565,28 +557,20 @@ FC_API(deip::app::database_api,
    (get_research_groups)
    (get_research_groups_by_member)
    (get_research_group_by_id)
-   (get_research_group_by_permlink)
-   (check_research_group_existence_by_permlink)
    (lookup_research_groups)
 
    // Research
    (get_research)
    (get_researches)
    (get_research_by_id)
-   (get_research_by_permlink)
    (get_researches_by_research_group)
    (get_researches_by_research_group_member)
-   (get_research_by_absolute_permlink)
-   (check_research_existence_by_permlink)
    (lookup_researches)
 
    // Research Content
    (get_research_content)
    (get_research_contents)
    (get_research_content_by_id)
-   (get_research_content_by_permlink)
-   (get_research_content_by_absolute_permlink)
-   (check_research_content_existence_by_permlink)
    (get_research_contents_by_research)
    (get_research_content_by_type)
    (lookup_research_contents)

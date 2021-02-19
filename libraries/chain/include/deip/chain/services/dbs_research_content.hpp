@@ -42,14 +42,6 @@ public:
 
     const research_content_optional_ref_type get_research_content_if_exists(const research_content_id_type& id) const;
 
-    /* [DEPRECATED] */ const research_content_object& get_research_content_by_permlink(const string& research_group_permlink,
-                                                                                       const string& research_permlink,
-                                                                                       const string& research_content_permlink) const;
-
-    /* [DEPRECATED] */ const research_content_optional_ref_type get_research_content_by_permlink_if_exists(const string& research_group_permlink,
-                                                                                                           const string& research_permlink,
-                                                                                                           const string& research_content_permlink) const;
-
     research_content_refs_type get_research_content_by_research_id(const research_id_type& research_id) const;
 
     research_content_refs_type get_by_research_and_type(const research_id_type &research_id, const research_content_type &type) const;

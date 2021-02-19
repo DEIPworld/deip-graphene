@@ -189,8 +189,6 @@
 #define DEIP_MIN_ACCOUNT_NAME_LENGTH          3
 #define DEIP_MAX_ACCOUNT_NAME_LENGTH         40
 
-#define DEIP_MIN_PERMLINK_LENGTH             0
-#define DEIP_MAX_PERMLINK_LENGTH             256
 #define DEIP_MAX_WITNESS_URL_LENGTH          2048
 
 #define DEIP_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)

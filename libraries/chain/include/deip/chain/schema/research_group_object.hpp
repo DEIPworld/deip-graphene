@@ -19,7 +19,6 @@ class research_group_object : public object<research_group_object_type, research
     template <typename Constructor, typename Allocator>
     research_group_object(Constructor&& c, allocator<Allocator> a)
       : description(a)
-      , permlink(a)
     {
       c(*this);
     }
@@ -31,7 +30,6 @@ class research_group_object : public object<research_group_object_type, research
     account_name_type creator; // creator account_object
 
     shared_string description;
-    shared_string permlink; /* [DEPRECATED] */
     asset balance = asset(0, DEIP_SYMBOL);
     int32_t management_model_v; /* [DEPRECATED] */
 
@@ -47,7 +45,6 @@ class research_group_object : public object<research_group_object_type, research
 };
 
 
-struct by_permlink;
 struct by_account;
 
 typedef multi_index_container<research_group_object,
@@ -65,13 +62,6 @@ typedef multi_index_container<research_group_object,
           research_group_object, 
           account_name_type, 
           &research_group_object::account>
-    >,
-    ordered_unique<
-      tag<by_permlink>, 
-        member<
-          research_group_object, 
-          shared_string,
-          &research_group_object::permlink>
     >
   >,
   allocator<research_group_object>>
@@ -138,7 +128,6 @@ FC_REFLECT(deip::chain::research_group_object,
   (id)
   (account)
   (creator)
-  (permlink)
   (description)
   (balance)
   (management_model_v)

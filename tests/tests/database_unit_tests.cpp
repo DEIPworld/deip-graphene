@@ -36,14 +36,12 @@ public:
             d.id = 1;
             d.research_group_id = 31;
             d.description = "name1";
-            d.permlink = "permlink1";
         });
 
         db.create<research_object>([&](research_object& d) {
             d.id = 2;
             d.research_group_id = 32;
             d.description = "name2";
-            d.permlink = "permlink2";
         });
     }
 
@@ -68,12 +66,10 @@ public:
     {
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 31;
-            d.permlink = "permlink31";
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 32;
-            d.permlink = "permlink32";
         });
     }
 
@@ -113,7 +109,6 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 1;
             d.research_id = 1;
-            d.permlink = "milestone_research_1";
             d.type = milestone_article;
             d.authors = {"alice"};
             d.activity_state = research_content_activity_state::active;
@@ -122,7 +117,6 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 2;
             d.research_id = 2;
-            d.permlink = "milestone_research_2";
             d.type = milestone_data;
             d.authors = {"alex"};
             d.activity_state = research_content_activity_state::active;
@@ -134,7 +128,6 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 1;
             d.research_id = 1;
-            d.permlink = "milestone_research_1";
             d.type = milestone_data;
             d.authors = {"alice"};
             d.activity_state = research_content_activity_state::active;
@@ -145,7 +138,6 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 2;
             d.research_id = 2;
-            d.permlink = "final_result_research_1";
             d.type = final_result;
             d.authors = {"alex"};
             d.activity_state = research_content_activity_state::active;
@@ -301,7 +293,6 @@ public:
             d.id = 1;
             d.research_group_id = 31;
             d.description = "name1";
-            d.permlink = "permlink1";
             d.number_of_positive_reviews = 10;
         });
 
@@ -309,7 +300,6 @@ public:
             d.id = 2;
             d.research_group_id = 32;
             d.description = "name2";
-            d.permlink = "permlink2";
             d.number_of_positive_reviews = 10;
         });
 
@@ -317,7 +307,6 @@ public:
             d.id = 3;
             d.research_group_id = 33;
             d.description = "name3";
-            d.permlink = "permlink3";
             d.number_of_positive_reviews = 10;
         });
     }
@@ -326,17 +315,14 @@ public:
     {
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 31;
-            d.permlink = "permlink1";
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 32;
-            d.permlink = "permlink2";
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 33;
-            d.permlink = "permlink3";
         });
     }
 

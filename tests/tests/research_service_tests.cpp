@@ -29,7 +29,6 @@ public:
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
             r.description = RESEARCH_TITLE;
-            r.permlink = RESEARCH_TITLE;
             r.research_group_id = RESEARCH_GROUP_ID;
             r.is_finished = false;
             r.created_at = db.head_block_time();
@@ -39,7 +38,6 @@ public:
 
         db.create<research_object>([&](research_object& r) {
             r.id = 2;
-            r.permlink = "Second";
             r.research_group_id = 2;
             r.is_finished = false;
             r.created_at = db.head_block_time();
@@ -49,7 +47,6 @@ public:
 
         db.create<research_object>([&](research_object& r) {
             r.id = 3;
-            r.permlink = "Third";
             r.research_group_id = 2;
             r.is_finished = false;
             r.created_at = db.head_block_time();
@@ -77,7 +74,6 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
             return  research.id == 2 &&
-                    research.permlink == "Second" &&
                     research.research_group_id == 2 &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
@@ -87,7 +83,6 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
             return  research.id == 3 &&
-                    research.permlink == "Third" &&
                     research.research_group_id == 2 &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
@@ -107,7 +102,6 @@ BOOST_AUTO_TEST_CASE(get_research)
 
         BOOST_CHECK(research.id == 1);
         BOOST_CHECK(research.description == RESEARCH_TITLE);
-        BOOST_CHECK(research.permlink == RESEARCH_TITLE);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());

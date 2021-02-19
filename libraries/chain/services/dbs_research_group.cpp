@@ -1,4 +1,3 @@
-#include <deip/chain/util/permlink.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/database/database.hpp>
@@ -34,35 +33,7 @@ const dbs_research_group::research_group_optional_ref_type dbs_research_group::g
     return result;
 }
 
-/* [DEPRECATED] */
-const research_group_object& dbs_research_group::get_research_group_by_permlink(const fc::string& permlink) const 
-{
-    const auto& idx = db_impl()
-      .get_index<research_group_index>()
-      .indices()
-      .get<by_permlink>();
 
-    auto itr = idx.find(permlink, fc::strcmp_less());
-    FC_ASSERT(itr != idx.end(), "Research group with permlink \"${1}\" does not exist.", ("1", permlink));
-    return *itr;
-}
-
-const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_by_permlink_if_exists(const string& permlink) const
-{
-    research_group_optional_ref_type result;
-    const auto& idx = db_impl()
-      .get_index<research_group_index>()
-      .indices()
-      .get<by_permlink>();
-
-    auto itr = idx.find(permlink, fc::strcmp_less());
-    if (itr != idx.end())
-    {
-        result = *itr;
-    }
-
-    return result;
-}
 
 const research_group_object& dbs_research_group::get_research_group_by_account(const account_name_type& account) const
 {
@@ -98,7 +69,6 @@ const research_group_object& dbs_research_group::create_personal_research_group(
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
               rg_o.account = account;
               rg_o.creator = account;
-              fc::from_string(rg_o.permlink, account);
               fc::from_string(rg_o.description, account);
               rg_o.management_model_v = 2;
               rg_o.is_personal = true;
@@ -116,13 +86,11 @@ const research_group_object& dbs_research_group::create_research_group(
   const account_name_type& creator,
   const string& description)
 {
-    const auto& research_group_permlink = deip::chain::util::generate_permlink(description);
     const research_group_object& research_group
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
               rg_o.account = account;
               rg_o.creator = creator;
               fc::from_string(rg_o.description, description);
-              fc::from_string(rg_o.permlink, research_group_permlink);
               rg_o.is_personal = false;
               rg_o.is_centralized = false;
               rg_o.is_dao = true;
@@ -136,10 +104,8 @@ const research_group_object& dbs_research_group::update_research_group(
   const research_group_object& research_group,
   const string& description) 
 {
-    const auto& research_group_permlink = deip::chain::util::generate_permlink(description);
     db_impl().modify(research_group, [&](research_group_object& rg_o) {
         fc::from_string(rg_o.description, description);
-        fc::from_string(rg_o.permlink, research_group_permlink);
     });
 
     return research_group;
@@ -153,17 +119,6 @@ const bool dbs_research_group::research_group_exists(const research_group_id_typ
       .get<by_id>();
 
     return idx.find(research_group_id) != idx.end();
-}
-
-/* [DEPRECATED] */
-const bool dbs_research_group::research_group_exists(const string& permlink) const
-{
-    const auto& idx = db_impl()
-      .get_index<research_group_index>()
-      .indices()
-      .get<by_permlink>();
-
-    return idx.find(permlink, fc::strcmp_less()) != idx.end();
 }
 
 const bool dbs_research_group::research_group_exists(const account_name_type& account) const

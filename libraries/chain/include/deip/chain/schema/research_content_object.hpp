@@ -65,8 +65,7 @@ public:
     template <typename Constructor, typename Allocator>
     research_content_object(Constructor &&c, allocator<Allocator> a) 
       : description(a), 
-        content(a), 
-        permlink(a)
+        content(a)
     {
         c(*this);
     }
@@ -79,7 +78,6 @@ public:
 
     shared_string description;
     shared_string content;
-    shared_string permlink; /* [DEPRECATED] */
 
     research_content_type type;
 
@@ -102,7 +100,6 @@ struct by_research_id_and_content_type;
 struct by_activity_state;
 struct by_activity_window_start;
 struct by_activity_window_end;
-struct by_permlink;
 struct by_external_id;
 
 typedef multi_index_container<research_content_object,
@@ -147,26 +144,6 @@ typedef multi_index_container<research_content_object,
             research_content_type,
             &research_content_object::type
           >
-        >
-    >,
-
-    ordered_unique<
-      tag<by_permlink>,
-        composite_key<research_content_object,
-          member<
-            research_content_object,
-            research_id_type,
-            &research_content_object::research_id
-          >,
-          member<
-            research_content_object,
-            shared_string,
-            &research_content_object::permlink
-          >
-        >,
-        composite_key_compare<
-          std::less<research_id_type>, 
-          fc::strcmp_less
         >
     >,
 
@@ -235,7 +212,6 @@ FC_REFLECT(deip::chain::research_content_object,
   (type)
   (description)
   (content)
-  (permlink)
   (authors)
   (created_at)
   (references)

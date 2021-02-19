@@ -407,7 +407,6 @@ const witness_object& database_fixture::witness_create(const string& owner,
 const research_group_object&
 database_fixture::research_group_create(const int64_t& id,
                                         const string& name,
-                                        const string& permlink,
                                         const string& description,
                                         const share_type funds,
                                         const bool is_dao,
@@ -417,7 +416,6 @@ database_fixture::research_group_create(const int64_t& id,
         = db.create<research_group_object>([&](research_group_object& rg) {
               rg.id = id;
               fc::from_string(rg.name, name);
-              fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
               rg.balance = funds;
               rg.is_dao = is_dao;
@@ -438,14 +436,13 @@ const research_group_token_object& database_fixture::research_group_token_create
 const research_group_object&
 database_fixture::setup_research_group(const int64_t& id,
                                        const string& name,
-                                       const string& permlink,
                                        const string& description,
                                        const share_type funds,
                                        const bool is_dao,
                                        const bool is_personal,
                                        const vector<std::pair<account_name_type, share_type>>& accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, is_dao, is_personal);
+    const auto& research_group = research_group_create(id, name, description, funds, is_dao, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -458,13 +455,11 @@ database_fixture::setup_research_group(const int64_t& id,
 const research_object& database_fixture::research_create(const int64_t id,
                                                          const string& title,
                                                          const string& abstract,
-                                                         const string& permlink,
                                                          const research_group_id_type& research_group_id)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
         fc::from_string(r.description, description);
-        fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.is_finished = false;
         r.created_at = db.head_block_time();

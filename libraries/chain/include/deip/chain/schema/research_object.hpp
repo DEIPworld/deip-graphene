@@ -30,7 +30,6 @@ public:
     template <typename Constructor, typename Allocator>
     research_object(Constructor&& c, allocator<Allocator> a)
         : description(a)
-        , permlink(a)
     {
         c(*this);
     }
@@ -40,7 +39,6 @@ public:
     research_group_id_type research_group_id;
     external_id_type research_group;
     shared_string description;
-    shared_string permlink; /* [DEPRECATED] */
     time_point_sec created_at;
     time_point_sec review_share_last_update;
     time_point_sec last_update_time;
@@ -62,7 +60,6 @@ public:
     bool is_private;
 };
 
-struct by_permlink;
 struct is_finished;
 struct by_research_group_id;
 struct by_research_group;
@@ -88,27 +85,7 @@ typedef multi_index_container<research_object,
           &research_object::external_id
         >
     >,
-
-    ordered_unique<
-      tag<by_permlink>,
-        composite_key<research_object,
-          member<
-            research_object,
-            research_group_id_type,
-            &research_object::research_group_id
-          >,
-          member<
-            research_object,
-            shared_string,
-            &research_object::permlink
-          >
-        >,
-        composite_key_compare<
-          std::less<research_group_id_type>, 
-          fc::strcmp_less
-        >
-    >,
-          
+ 
     ordered_non_unique<
       tag<is_finished>,
         member<
@@ -146,7 +123,6 @@ FC_REFLECT(deip::chain::research_object,
   (id)
   (external_id)
   (description)
-  (permlink)
   (research_group_id)
   (research_group)
   (created_at)
