@@ -2171,36 +2171,6 @@ void database::apply_transaction(const signed_transaction& trx, uint32_t skip)
     notify_on_applied_transaction(trx);
 }
 
-struct transaction_extension_guard
-{
-    transaction_extension_guard(const optional<external_id_type>& tenant)
-    {
-        if (tenant.valid())
-        {
-            _tenant = *tenant;
-        }
-    }
-
-    typedef void result_type;
-    template <typename T> void operator()(const T& v) const
-    {
-    }
-
-    void operator()(const transaction_extension_type& ext) const
-    {
-        if (ext.which() == transaction_extension_type::tag<tenant_marker_type>::value)
-        {
-            // TODO: Remove this assert after merging to global network
-            const tenant_marker_type& tenant_ext = ext.get<tenant_marker_type>();
-            FC_ASSERT(!_tenant.valid() || tenant_ext.tenant == (*_tenant), "Unexpected Tenant ID: ${1}", ("1", tenant_ext.tenant));
-        }
-    }
-
-private:
-    optional<external_id_type> _tenant;
-};
-
-
 void database::_apply_transaction(const signed_transaction& trx)
 {
     try
@@ -2210,12 +2180,6 @@ void database::_apply_transaction(const signed_transaction& trx)
         _current_trx_ref_block_prefix = trx.ref_block_prefix;
 
         uint32_t skip = get_node_properties().skip_flags;
-
-        transaction_extension_guard trx_ext_guard(_tenant);
-        for (const transaction_extension_type& ext : trx.extensions)
-        {
-            trx_ext_guard(ext);
-        }
 
         if (!(skip & skip_validate)) /* issue #505 explains why this skip_flag is disabled */
             trx.validate();
@@ -2228,32 +2192,62 @@ void database::_apply_transaction(const signed_transaction& trx)
 
         if (!(skip & (skip_transaction_signatures | skip_authority_check)))
         {
-            auto get_active = [&](const string& name) { 
-                return authority(get<account_authority_object, by_account>(name).active); 
-            };
-            
-            auto get_owner = [&](const string& name) { 
-                return authority(get<account_authority_object, by_account>(name).owner); 
-            };
-
-            auto get_active_overrides = [&](const string& name, const uint16_t& op_tag) {
-                fc::optional<authority> result;
-                const auto& auth = get<account_authority_object, by_account>(name);
-                if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
-                {
-                    result = auth.active_overrides.at(op_tag);
-                }
-                return result;
-            };
-
             try
             {
-                trx.verify_authority(get_chain_id(), get_active, get_owner, get_active_overrides);
+                auto get_active = [&](const string& name) { 
+                    return authority(get<account_authority_object, by_account>(name).active); 
+                };
+
+                auto get_owner = [&](const string& name) { 
+                    return authority(get<account_authority_object, by_account>(name).owner); 
+                };
+
+                auto get_active_overrides = [&](const string& name, const uint16_t& op_tag) {
+                    fc::optional<authority> result;
+                    const auto& auth = get<account_authority_object, by_account>(name);
+                    if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
+                    {
+                        result = auth.active_overrides.at(op_tag);
+                    }
+                    return result;
+                };
+
+                trx.verify_authority(
+                    get_chain_id(), 
+                    get_active,
+                    get_owner, 
+                    get_active_overrides
+                );                
             }
             catch (protocol::tx_missing_active_auth& e)
             {
                 if (get_shared_db_merkle().find(head_block_num() + 1) == get_shared_db_merkle().end())
                     throw e;
+            }
+            try
+            {
+                auto get_tenant = [&](const string& account_name) {
+                    authority result;
+                    const auto& auth = get<account_authority_object, by_account>(account_name);
+                
+                    for (const auto& item : auth.active.key_auths)
+                    {
+                        result.add_authority(item.first, item.second);
+                    }
+
+                    for (const auto& item : auth.owner.key_auths)
+                    {
+                        result.add_authority(item.first, item.second);
+                    }
+
+                    return result;
+                };
+
+                trx.verify_tenant_authority(get_chain_id(), get_tenant);
+            }
+            catch (protocol::tx_missing_tenant_auth& e)
+            {
+                throw e;
             }
         }
 

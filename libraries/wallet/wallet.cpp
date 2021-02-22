@@ -725,24 +725,32 @@ public:
             return it->second;
         };
 
-        auto minimal_signing_keys = tx.minimize_required_signatures(
-            _chain_id, available_keys,
-            [&](const string& account_name) -> const deip::protocol::authority {
-                return (get_account_from_lut(account_name).active);
-            },
-            [&](const string& account_name) -> const deip::protocol::authority {
-                return (get_account_from_lut(account_name).owner);
-            },
-            [&](const string& account_name, const uint16_t& op_tag) {
-                fc::optional<deip::protocol::authority> result;
-                const auto& account = get_account_from_lut(account_name);
-                if (account.active_overrides.find(op_tag) != account.active_overrides.end())
-                {
-                    result = account.active_overrides.at(op_tag);
-                    return result;
-                }
+        auto get_active = [&](const string& account_name) -> const deip::protocol::authority {
+            return (get_account_from_lut(account_name).active);
+        };
+
+        auto get_owner =  [&](const string& account_name) -> const deip::protocol::authority {
+            return (get_account_from_lut(account_name).owner);
+        };
+
+        auto get_active_overrides = [&](const string& account_name, const uint16_t& op_tag) {
+            fc::optional<deip::protocol::authority> result;
+            const auto& account = get_account_from_lut(account_name);
+            if (account.active_overrides.find(op_tag) != account.active_overrides.end())
+            {
+                result = account.active_overrides.at(op_tag);
                 return result;
-            });
+            }
+            return result;
+        };
+
+        auto minimal_signing_keys = tx.minimize_required_signatures(
+            _chain_id, 
+            available_keys,
+            get_active,
+            get_owner,
+            get_active_overrides
+        );
 
         for (const public_key_type& k : minimal_signing_keys)
         {

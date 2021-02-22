@@ -8,13 +8,12 @@
 namespace deip {
 namespace protocol {
 
-struct tenant_marker_type
+struct tenant_affirmation_type
 {
     external_id_type tenant;
+    signature_type signature;
     extensions_type extensions;
 };
-
-typedef fc::static_variant<tenant_marker_type> transaction_extension_type;
 
 struct transaction
 {
@@ -24,8 +23,8 @@ struct transaction
     fc::time_point_sec expiration;
 
     vector<operation> operations;
-    flat_set<transaction_extension_type> extensions;
-
+    future_extensions extensions;
+    
     digest_type digest() const;
     transaction_id_type id() const;
     void validate() const;
@@ -84,7 +83,10 @@ struct signed_transaction : public transaction
 
     flat_set<public_key_type> get_signature_keys(const chain_id_type& chain_id) const;
 
+    void verify_tenant_authority(const chain_id_type& chain_id, const authority_getter& get_tenant) const;
+
     vector<signature_type> signatures;
+    optional<tenant_affirmation_type> tenant_signature;
 
     digest_type merkle_digest() const;
 
@@ -122,11 +124,8 @@ struct annotated_signed_transaction : public signed_transaction
 } // deip::protocol
 
 FC_REFLECT(deip::protocol::transaction, (ref_block_num)(ref_block_prefix)(expiration)(operations)(extensions))
-FC_REFLECT_DERIVED(deip::protocol::signed_transaction, (deip::protocol::transaction), (signatures))
+FC_REFLECT_DERIVED(deip::protocol::signed_transaction, (deip::protocol::transaction), (signatures)(tenant_signature))
 FC_REFLECT_DERIVED(deip::protocol::annotated_signed_transaction, (deip::protocol::signed_transaction),
     (transaction_id)(block_num)(transaction_num));
 
-FC_REFLECT(deip::protocol::tenant_marker_type, (tenant)(extensions))
-
-DECLARE_STATIC_VARIANT_TYPE(deip::protocol::transaction_extension_type)
-FC_REFLECT_TYPENAME(deip::protocol::transaction_extension_type)
+FC_REFLECT(deip::protocol::tenant_affirmation_type, (tenant)(signature)(extensions))

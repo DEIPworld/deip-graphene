@@ -734,22 +734,30 @@ bool database_api::verify_authority(const signed_transaction& trx) const
 
 bool database_api_impl::verify_authority(const signed_transaction& trx) const
 {
-    trx.verify_authority(get_chain_id(),
-        [&](const string& account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).active);
-        },
-        [&](const string& account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).owner);
-        },
-        [&](const string& account_name, const uint16_t& op_tag) {
-            fc::optional<authority> result;
-            const auto& auth = _db.get<account_authority_object, by_account>(account_name);
-            if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
-            {
-                result = auth.active_overrides.at(op_tag);
-            }
-            return result;
-        });
+    auto get_active = [&](const string& account_name) {
+        return authority(_db.get<account_authority_object, by_account>(account_name).active);
+    };
+
+    auto get_owner = [&](const string& account_name) {
+        return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+    };
+
+    auto get_active_overrides = [&](const string& account_name, const uint16_t& op_tag) {
+        fc::optional<authority> result;
+        const auto& auth = _db.get<account_authority_object, by_account>(account_name);
+        if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
+        {
+            result = auth.active_overrides.at(op_tag);
+        }
+        return result;
+    };
+
+    trx.verify_authority(
+        get_chain_id(),
+        get_active,
+        get_owner,
+        get_active_overrides
+    );
     return true;
 }
 

@@ -282,6 +282,16 @@ flat_set<public_key_type> signed_transaction::get_signature_keys(const chain_id_
     FC_CAPTURE_AND_RETHROW()
 }
 
+void signed_transaction::verify_tenant_authority(const chain_id_type& chain_id, const authority_getter& get_tenant) const
+{
+    DEIP_ASSERT(tenant_signature.valid(), tx_missing_tenant_auth, "Missing Tenant Authority"); // required for now
+    const auto& val = *tenant_signature;
+    auto d = sig_digest(chain_id);
+    const public_key_type pub = fc::ecc::public_key(val.signature, d);
+    const auto& auth = get_tenant(val.tenant);
+    DEIP_ASSERT(auth.key_auths.find(pub) != auth.key_auths.end(), tx_missing_tenant_auth, "Missing Tenant Authority ${id}", ("id", val.tenant));
+}
+
 set<public_key_type> signed_transaction::get_required_signatures(const chain_id_type& chain_id,
                                                                  const flat_set<public_key_type>& available_keys,
                                                                  const authority_getter& get_active,
@@ -354,11 +364,11 @@ void signed_transaction::verify_authority(const chain_id_type& chain_id,
     try
     {
         deip::protocol::verify_authority(
-          operations, 
-          get_signature_keys(chain_id), 
-          get_active, 
-          get_owner,
-          get_active_overrides
+            operations, 
+            get_signature_keys(chain_id), 
+            get_active, 
+            get_owner,
+            get_active_overrides
         );
     }
     FC_CAPTURE_AND_RETHROW((*this))
@@ -367,5 +377,3 @@ void signed_transaction::verify_authority(const chain_id_type& chain_id,
 
 }
 } // deip::protocol
-
-DEFINE_STATIC_VARIANT_TYPE(deip::protocol::transaction_extension_type)
