@@ -179,7 +179,6 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
 void database::init_genesis_research_content_reviews(const genesis_state_type& genesis_state)
 {
     auto& review_service = obtain_service<dbs_review>();
-    auto& research_service = obtain_service<dbs_research>();
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& disciplines_service = obtain_service<dbs_discipline>();
 
@@ -192,7 +191,6 @@ void database::init_genesis_research_content_reviews(const genesis_state_type& g
         const int32_t& assessment_model_type = 1;
         flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
         multicriteria_scoring_assessment_model_type assessment_model;
-
         for (const auto& score : research_content_review.scores)
         {
             assessment_model.scores.insert(std::make_pair(score.first, score.second));
@@ -205,13 +203,13 @@ void database::init_genesis_research_content_reviews(const genesis_state_type& g
         const bool& is_positive = total_score >= (assessment_criteria_value) DEIP_MIN_POSITIVE_REVIEW_SCORE;
         
         std::set<discipline_id_type> review_disciplines;
+        std::map<discipline_id_type, share_type> review_used_expertise_by_disciplines;
         for (const auto& discipline_external_id : research_content_review.disciplines)
         {
             const auto& discipline = disciplines_service.get_discipline(discipline_external_id);
-            review_disciplines.insert(discipline_id_type(discipline.id));
+            review_disciplines.insert(discipline.id);
+            review_used_expertise_by_disciplines.insert(std::make_pair(discipline.id, DEIP_DEFAULT_EXPERTISE_AMOUNT));
         }
-
-        const std::map<discipline_id_type, share_type> review_used_expertise_by_disciplines;
 
         review_service.create_review(
           research_content_review.external_id,
@@ -440,8 +438,6 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
-    dbs_asset& asset_service = obtain_service<dbs_asset>();
-
     dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;

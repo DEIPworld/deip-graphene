@@ -141,7 +141,6 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
 void create_account_evaluator::do_apply(const create_account_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& asset_service = _db.obtain_service<dbs_asset>();
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
     auto& discipline_service = _db.obtain_service<dbs_discipline>();
@@ -1788,7 +1787,6 @@ void certify_award_withdrawal_request_evaluator::do_apply(const certify_award_wi
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_award& award_service = _db.obtain_service<dbs_award>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const external_id_type payment_number = op.payment_number;
     const external_id_type award_number = op.award_number;
@@ -1866,7 +1864,6 @@ void reject_award_withdrawal_request_evaluator::do_apply(const reject_award_with
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_award& award_service = _db.obtain_service<dbs_award>();
     dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const external_id_type payment_number = op.payment_number;
     const external_id_type award_number = op.award_number;
@@ -1977,9 +1974,8 @@ void create_research_nda_evaluator::do_apply(const create_research_nda_operation
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
-
+    
     fc::time_point_sec block_time = _db.head_block_time();
     fc::time_point_sec start_time = op.start_time.valid() ? *op.start_time : block_time;
 
@@ -2031,9 +2027,7 @@ void close_nda_contract_evaluator::do_apply(const close_nda_contract_operation& 
 
 void create_nda_content_access_request_evaluator::do_apply(const create_nda_content_access_request_operation& op)
 {
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
 
     const auto& block_time = _db.head_block_time();
@@ -2053,10 +2047,8 @@ void create_nda_content_access_request_evaluator::do_apply(const create_nda_cont
 
 void fulfill_nda_content_access_request_evaluator::do_apply(const fulfill_nda_content_access_request_operation& op)
 {
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     FC_ASSERT(nda_contract_requests_service.content_access_request_exists(op.external_id),
       "Request ${1} does not exist",

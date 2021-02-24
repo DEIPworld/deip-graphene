@@ -322,7 +322,6 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
 {
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
     dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
-    dbs_research_token& research_token_service = db_impl().obtain_service<dbs_research_token>();
     dbs_asset& asset_service = db_impl().obtain_service<dbs_asset>();
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
