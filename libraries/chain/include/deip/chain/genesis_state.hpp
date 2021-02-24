@@ -70,6 +70,7 @@ struct genesis_state_type
         account_name_type creator;
         std::string description;
         std::set<account_name_type> members;
+        std::string tenant;
     };
 
     struct research_type
@@ -94,6 +95,16 @@ struct genesis_state_type
         flat_set<protocol::external_id_type> references;
     };
 
+    struct research_content_review_type 
+    {
+        protocol::external_id_type external_id;
+        protocol::external_id_type research_content_external_id;
+        std::string content;
+        account_name_type author;
+        flat_set<protocol::external_id_type> disciplines;
+        flat_map<uint16_t, uint16_t> scores;
+    };
+ 
     struct vesting_balance_type
     {
         vesting_balance_id_type id;
@@ -128,6 +139,7 @@ struct genesis_state_type
     std::vector<research_type> researches;
     std::vector<research_content_type> research_contents;
     std::vector<vesting_balance_type> vesting_balances;
+    std::vector<research_content_review_type> research_contents_reviews;
 
     chain_id_type initial_chain_id;
 };
@@ -182,6 +194,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
           (creator)
           (description)
           (members)
+          (tenant)
 )
 
 FC_REFLECT(deip::chain::genesis_state_type::research_type,
@@ -202,6 +215,15 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
           (type)
           (authors)
           (references)
+)
+
+FC_REFLECT(deip::chain::genesis_state_type::research_content_review_type,
+          (external_id)
+          (research_content_external_id)
+          (content)
+          (author)
+          (disciplines)
+          (scores)
 )
 
 FC_REFLECT(deip::chain::genesis_state_type::vesting_balance_type,
@@ -227,5 +249,7 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (researches)
            (research_contents)
            (initial_chain_id)
-           (vesting_balances))
+           (vesting_balances)
+           (research_contents_reviews)
+)
 // clang-format on

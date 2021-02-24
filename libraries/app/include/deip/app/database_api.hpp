@@ -336,9 +336,9 @@ public:
     vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
     vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research_content(const research_content_id_type& research_content_id) const;
 
-    ///////////////////////////////
-    // Research Reviews          //
-    ///////////////////////////////
+    ///////////////////////
+    // Research Reviews  //
+    ///////////////////////
     fc::optional<review_api_obj> get_review(const external_id_type& external_id) const;
     vector<review_api_obj> get_reviews(const set<external_id_type>& ids) const;
     fc::optional<review_api_obj> get_review_by_id(const review_id_type& review_id) const;

@@ -429,6 +429,7 @@ protected:
     void init_genesis_expert_tokens(const genesis_state_type& genesis_state);
     void init_genesis_research(const genesis_state_type& genesis_state);
     void init_genesis_research_content(const genesis_state_type& genesis_state);
+    void init_genesis_research_content_reviews(const genesis_state_type& genesis_state);
     void init_genesis_research_groups(const genesis_state_type& genesis_state);
     void init_genesis_research_group(const genesis_state_type::research_group_type& research_group);
     void init_genesis_vesting_balances(const genesis_state_type& genesis_state);

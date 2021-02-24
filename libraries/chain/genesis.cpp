@@ -21,6 +21,7 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
@@ -102,6 +103,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_expert_tokens(genesis_state);
         init_genesis_research(genesis_state);
         init_genesis_research_content(genesis_state);
+        init_genesis_research_content_reviews(genesis_state);
         init_genesis_vesting_balances(genesis_state);
 
         // Nothing to do
@@ -172,6 +174,60 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         );
     }
 }
+
+
+void database::init_genesis_research_content_reviews(const genesis_state_type& genesis_state)
+{
+    auto& review_service = obtain_service<dbs_review>();
+    auto& research_service = obtain_service<dbs_research>();
+    auto& research_content_service = obtain_service<dbs_research_content>();
+    auto& disciplines_service = obtain_service<dbs_discipline>();
+
+    const vector<genesis_state_type::research_content_review_type>& research_contents_reviews = genesis_state.research_contents_reviews;
+
+    for (const auto& research_content_review : research_contents_reviews)
+    {
+        const auto& research_content = research_content_service.get_research_content(research_content_review.research_content_external_id);
+
+        const int32_t& assessment_model_type = 1;
+        flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
+        multicriteria_scoring_assessment_model_type assessment_model;
+
+        for (const auto& score : research_content_review.scores)
+        {
+            assessment_model.scores.insert(std::make_pair(score.first, score.second));
+            assessment_criterias.insert(std::make_pair(score.first, assessment_criteria_value(score.second)));
+        }
+
+        const assessment_criteria_value total_score = std::accumulate(std::begin(assessment_model.scores), std::end(assessment_model.scores), assessment_criteria_value(0),
+            [&](assessment_criteria_value total, const std::map<uint16_t, uint16_t>::value_type& m) { return total + assessment_criteria_value(m.second); });
+
+        const bool& is_positive = total_score >= (assessment_criteria_value) DEIP_MIN_POSITIVE_REVIEW_SCORE;
+        
+        std::set<discipline_id_type> review_disciplines;
+        for (const auto& discipline_external_id : research_content_review.disciplines)
+        {
+            const auto& discipline = disciplines_service.get_discipline(discipline_external_id);
+            review_disciplines.insert(discipline_id_type(discipline.id));
+        }
+
+        const std::map<discipline_id_type, share_type> review_used_expertise_by_disciplines;
+
+        review_service.create_review(
+          research_content_review.external_id,
+          research_content.research_external_id,
+          research_content.external_id,
+          research_content.id,
+          research_content_review.content,
+          is_positive,
+          research_content_review.author,
+          review_disciplines,
+          review_used_expertise_by_disciplines,
+          assessment_model_type,
+          assessment_criterias
+        );
+    }
+} 
 
 
 void database::init_genesis_assets(const genesis_state_type& genesis_state)
@@ -664,6 +720,12 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
         const auto& member = account_service.get_account(member_name);
         owner_authority.add_authority(account_name_type(member.name), 1);
         active_authority.add_authority(account_name_type(member.name), 1);
+    }
+
+    if (research_group.account != research_group.tenant)
+    {
+        owner_authority.add_authority(account_name_type(research_group.tenant), 1);
+        active_authority.add_authority(account_name_type(research_group.tenant), 1); 
     }
 
     if (research_group.public_key != public_key_type()) 

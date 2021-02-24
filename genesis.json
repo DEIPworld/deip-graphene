@@ -556,7 +556,8 @@
       "members": [
         "alice",
         "bob"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "a6d1a54f8ebbe1afe800feb65934c30194cd8576",
@@ -566,7 +567,8 @@
         "bob",
         "alex",
         "nick"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "1b82cf477e7669f29f69f06656467d1a674d2d43",
@@ -576,7 +578,8 @@
         "bob",
         "anastasia",
         "irene"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "63c44a2ca40aab336c643fafc079c300a5b186bf",
@@ -586,7 +589,8 @@
         "bob",
         "alex",
         "carla"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "15f1ecc9beaca01cb5d826b0dac3c06d4d31b7c5",
@@ -596,7 +600,8 @@
         "bob",
         "dorothy",
         "james"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "b883480f95ad3eec2909288d7127ae7cf1126263",
@@ -606,7 +611,8 @@
         "bob",
         "mike",
         "rick"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "58e3bfd753fcb860a66b82635e43524b285ab708",
@@ -616,7 +622,8 @@
       "members": [
         "peter",
         "thomas"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "c8657fa6cbaee3917ac4e2ed6ada9d0a55a15ac5",
@@ -624,7 +631,8 @@
       "description": "5f0ddd30dae95ba55876bd3d323a75e3ac7cdae600934d58b9965cc0c8b8ca64",
       "members": [
         "greg"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "c8a87b12c23f53866acd397f43b591fd4e631419",
@@ -634,7 +642,8 @@
       "members": [
         "rachel",
         "david"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     },
     {
       "account": "1169d704f8a908016033efe8cce6df93f618a265",
@@ -643,7 +652,8 @@
       "description": "6dfd366f0e402dfcefcb0aee1d9f249cc69f5f5740f6c6829e13f6740ca9d4c8",
       "members": [
         "kim"
-      ]
+      ],
+      "tenant": "0000000000000000000000000000000000000000"
     }
   ],
   "researches": [
@@ -815,6 +825,31 @@
         "mike"
       ],
       "references": []
+    }
+  ],
+  "research_contents_reviews": [
+    {
+      "external_id": "9eef403d67de6522db38239a99267e66b0e3f8ed",
+      "research_content_external_id": "203009b7d1b0fde58517adb9c91f914b1d29b00c",
+      "content": "f7626c3f1f6b0e6fc519a2f495ea7f89508be692f8d1ca8c912f685853c41adc",
+      "author": "alice",
+      "disciplines": [
+        "7c3d37cbfea2513a7e03e674448bbeee8ae3d862"
+      ],
+      "scores": [
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          7,
+          1
+        ]
+      ]
     }
   ]
 }
