@@ -13,21 +13,21 @@ FULL_NODE_PREFIX="full-node"
 # export IMAGE_NAME="$ORG/$IMAGE_PREFIX-$WALLET_PREFIX:$TAG"
 # export LATEST_IMAGE_NAME="$ORG/$IMAGE_PREFIX-$WALLET_PREFIX:$LATEST"
 
-# docker build -t=${IMAGE_NAME} -f docker/Dockerfile.wallet --build-arg BUILD_TESTNET=ON .
+# docker build -t=${IMAGE_NAME} -f docker/Dockerfile.wallet --build-arg BUILD_TESTNET=OFF .
 # docker tag ${IMAGE_NAME} ${LATEST_IMAGE_NAME}
 
 echo "Build low-memory node"
 export IMAGE_NAME="$ORG/$IMAGE_PREFIX-$NODE_PREFIX:$TAG"
 export LATEST_IMAGE_NAME="$ORG/$IMAGE_PREFIX-$NODE_PREFIX:$LATEST"
 
-docker build -t=${IMAGE_NAME} -f docker/Dockerfile.node --build-arg BUILD_TESTNET=ON .
+docker build -t=${IMAGE_NAME} -f docker/Dockerfile.node --build-arg BUILD_TESTNET=OFF .
 docker tag ${IMAGE_NAME} ${LATEST_IMAGE_NAME}
 
 echo "Build full node"
 export IMAGE_NAME="$ORG/$IMAGE_PREFIX-$FULL_NODE_PREFIX:$TAG"
 export LATEST_IMAGE_NAME="$ORG/$IMAGE_PREFIX-$FULL_NODE_PREFIX:$LATEST"
 
-docker build -t=${IMAGE_NAME} -f docker/Dockerfile.fullnode --build-arg BUILD_TESTNET=ON .
+docker build -t=${IMAGE_NAME} -f docker/Dockerfile.fullnode --build-arg BUILD_TESTNET=OFF .
 docker tag ${IMAGE_NAME} ${LATEST_IMAGE_NAME}
 
 echo "Remove intermediate images"
