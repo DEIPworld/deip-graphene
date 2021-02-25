@@ -359,7 +359,8 @@
         "deip-jcu",
         "veronika-trajerova"
       ],
-      "tenant": "fa81a9ab079d34b383db5935ce18cafc96f36dc5"
+      "tenant": "fa81a9ab079d34b383db5935ce18cafc96f36dc5",
+      "public_key": "DEIP8G25xQk3dPCdBqdihEppiZ4Rjw7Dcc5DbjGgX6tDgWFL29zepJ"
     },
     {
       "account": "90a03e55d8b3d7b407ac69de9a67f7657c1e5966",
@@ -479,7 +480,8 @@
         "jana-sav",
         "simona-rataj"
       ],
-      "tenant": "00067e21d5b12b2393677e87d3fbbc52adcfbb28"
+      "tenant": "00067e21d5b12b2393677e87d3fbbc52adcfbb28",
+      "public_key": "DEIP8FiSkbrAEHtk3GMLjEi23kdiG8QRNbUrjcC4vHasTM8FQmanNd"
     },
     {
       "account": "7b3b440999b627ed4a68a37625eceebc70c5c447",
@@ -508,7 +510,8 @@
         "deip-geiger",
         "eugen-otava"
       ],
-      "tenant": "e7b3aabc542e77062b599d24a00b60ea6122850d"
+      "tenant": "e7b3aabc542e77062b599d24a00b60ea6122850d",
+      "public_key": "DEIP8feUU1MigFXQtd5aebrrucQZx4QiaWn6WCJR5a2re1zZbDPzny"
     },
     {
       "account": "95df0f229ed3d03220e007ac60b8056a1f5938fc",
@@ -536,7 +539,8 @@
         "larry-loev",
         "deip-ariel"
       ],
-      "tenant": "8c5081e73c0af4c232a78417bc1b573ebe70c40c"
+      "tenant": "8c5081e73c0af4c232a78417bc1b573ebe70c40c",
+      "public_key": "DEIP5f4JLkEhGVxzbkXVqcaYXRJ4o9C4GbBJyP3FYyyMn5EY2Trs5U"
     }
   ],
   "researches": [
