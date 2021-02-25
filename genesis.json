@@ -10,142 +10,142 @@
     {
       "name": "deip-jcu",
       "recovery_account": "regacc",
-      "public_key": "DEIP8Ac5k2omGyZ9mVDXnzkYuxrNve4B2Zg2tV8GW2nvWbs4Rfy3QF"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "initdelegate",
       "recovery_account": "regacc",
-      "public_key": "DEIP4z5NTaN98MX6wXSqM4hTCxFwRcVQZ3BZA29xeauUXGwDXTZmZU"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jakub-brom",
       "recovery_account": "regacc",
-      "public_key": "DEIP7mrUWuvJaqpeoDfkTCXTzXZ12n2nLZaGAe5mJzLU6GQgRbPi6X"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jan-fesl",
       "recovery_account": "regacc",
-      "public_key": "DEIP7SvDYcus7qCmFrUssKzr3TjgfJywJUf1U2kcmKYM27yd1CH9gQ"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jan-regenda",
       "recovery_account": "regacc",
-      "public_key": "DEIP7NNAraboJ5uRpQToVEnnV7uELcU6bodhPmDhGizr4JTAffrtPN"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jan-sterba",
       "recovery_account": "regacc",
-      "public_key": "DEIP5hVb4eUyeNvhXg4tuUW5HrbHWn5DfeXAXpeJruSKyU8ZXSQE7k"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jan-urban",
       "recovery_account": "regacc",
-      "public_key": "DEIP5eVHUXWDDayQjExiTm5AT2dCmmDEjv1qnSQ5Tqd5NtxMAF1MVA"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jiri-kratochvil",
       "recovery_account": "regacc",
-      "public_key": "DEIP7G9Rn86enj9F9BZ6YTgx35hwG8Wkj5qZ9EcdHJXkhrfbHqb3Kz"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "ladislav-ptacek",
       "recovery_account": "regacc",
-      "public_key": "DEIP75kvYp3tEFzULeZpwz4cWs2PMziP2W7M3HXcujopPHbZiSQqHX"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "martina-krasnicka",
       "recovery_account": "regacc",
-      "public_key": "DEIP6Xt4YSfvhrts6auBSMqT2euUSJbsVASAv6LaTHxiZ2FVPwzmBS"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "petr-cisar",
       "recovery_account": "regacc",
-      "public_key": "DEIP6x744mrgpHSKi2J5tmt3ev1hWNZJMk5LQg1eeKhoraEiVayUb4"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "renata-rychtarikova",
       "recovery_account": "regacc",
-      "public_key": "DEIP4v4gSgX3Y3NqS97WQZhA4xKQQ8aU3U9QcXdvxDQJ49JfmnMD3i"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "roman-franek",
       "recovery_account": "regacc",
-      "public_key": "DEIP8F1xcfhASS1puWdLF5E8LJXMBidSghon4vRNjtSWzfZ36yqufv"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "ruzena-stemberkova",
       "recovery_account": "regacc",
-      "public_key": "DEIP5EHjiSafT24BGi5H1bKsQ9qWLmbScufGNRMGLaGPd1WMjxQsWf"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "veronika-trajerova",
       "recovery_account": "regacc",
-      "public_key": "DEIP5DWzMCwsbVvFP74XUiwa5e7LCaJpPosCV3UnrxoqRAMZ6w89Lx"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "andrej-zerovnik",
       "recovery_account": "regacc",
-      "public_key": "DEIP4vyjTb8S26TBd5fj1Ub1FmVjzVdZw8ertJkWbLjcZhLNEYXAFd"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "deip-uni-lj",
       "recovery_account": "regacc",
-      "public_key": "DEIP5zAbqDrVdwUetoMvbPDCyeckZtpQNEgErMpPWNDE1hfJhX9DUY"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "jana-sav",
       "recovery_account": "regacc",
-      "public_key": "DEIP8XCFPTbm2RDSyvtEFCsjBmJ6JBfkLjeKpe5W3yoSRkNGbPUoyk"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "simona-rataj",
       "recovery_account": "regacc",
-      "public_key": "DEIP68kas1RziZDChzt8qH5cQPiE3vYX1TqHRcFaM4N5jRazKF518N"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "urban-rudez",
       "recovery_account": "regacc",
-      "public_key": "DEIP8DeD3CFdg56t96T7tj7a43oLHxNvP6Dmk8fiQjNQH98ZWjvYJT"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "ursa-jerse",
       "recovery_account": "regacc",
-      "public_key": "DEIP4ui6B4hFgfYmj1HftLUF1kCByiUYuDv4xBGK7xDTMLCL8WggkF"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "deip-geiger",
       "recovery_account": "regacc",
-      "public_key": "DEIP6BTKWbabUtUhMAB4kq3Kf5LKZkipzd5WYwrbg7hARkBS5kbhe4"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "eugen-otava",
       "recovery_account": "regacc",
-      "public_key": "DEIP6pqokHagNbHAw6y1bSyqwuqhQQeP6UAQaP5FPJEBumP6EqZic9"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "stelian-brad",
       "recovery_account": "regacc",
-      "public_key": "DEIP8dHuLFQ9QgXZ4pch8UpMeWqLzyBF4fGpaVacVDQnBewfV4J7Xh"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "test",
       "recovery_account": "regacc",
-      "public_key": "DEIP7VUyBLsJEv2oGiM73YNWwiGWG2yB9zAf2MxcExZ89Y3RdeeXTj"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "test1",
       "recovery_account": "regacc",
-      "public_key": "DEIP5s3nBS6TojF9HFxSJ2L35FainfAv5go8PXVpF4Pao8sffb6vvv"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "deip-ariel",
       "recovery_account": "regacc",
-      "public_key": "DEIP7HMxNySJjPj1c9CMrQexAsfdYWKyTHdoopBPUsNFDgGT4ykAPf"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     },
     {
       "name": "larry-loev",
       "recovery_account": "regacc",
-      "public_key": "DEIP5ye3twAuhvMQc1zoaj5tYLZwZZDuV4EVy2ejDVL4ATe4NmYcCW"
+      "public_key": "DEIP7cqzf9qxb9NEkXCJQjNEsGCHG48ywEqkrcaT3owTynHr828mso"
     }
   ],
   "assets": [
