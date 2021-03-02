@@ -61,6 +61,72 @@ struct post_operation_visitor
     {
     }
 
+
+    void operator()(const proposal_initialized_operation& op) const
+    {
+        std::stringstream ss;
+        transaction proposed_transaction;
+        std::string packed_trx = fc::base64_decode(op.serialized_proposed_transaction);
+        ss.str(packed_trx);
+        fc::raw::unpack(ss, proposed_transaction);
+
+        flat_set<account_name_type> required_active;
+        flat_set<account_name_type> required_owner;
+        vector<authority> other;
+
+        for (const auto& op : proposed_transaction.operations)
+        {
+            deip::protocol::operation_get_required_authorities(op, required_active, required_owner, other);
+        }
+
+        flat_set<account_name_type> required_approvals;
+        for (const auto& approver : required_active)
+        {
+            required_approvals.insert(approver);
+        }
+        for (const auto& approver : required_owner)
+        {
+            required_approvals.insert(approver);
+        }
+
+        const auto& proposal_state = _plugin.database().create<proposal_state_object>([&](proposal_state_object& ps_o) {
+            ps_o.external_id = op.external_id;
+            ps_o.proposer = op.proposer;
+            ps_o.status = op.status;
+
+            for (const auto& approver : required_approvals)
+            {
+                ps_o.required_approvals.insert(approver);
+            }
+
+            ps_o.proposed_transaction = proposed_transaction;
+            ps_o.expiration_time = op.expiration_time;
+            ps_o.created_at = op.created_at;
+
+            if (op.review_period_time.valid())
+            {
+                ps_o.review_period_time = *op.review_period_time;
+            }
+        });
+
+        for (const account_name_type& approver : required_approvals)
+        {
+            _plugin.database().create<proposal_lookup_object>([&](proposal_lookup_object& pl_o) {
+                pl_o.proposal = op.external_id;
+                pl_o.account = approver;
+            });
+        }
+
+        if (required_approvals.find(op.proposer) == required_approvals.end())
+        {
+            _plugin.database().create<proposal_lookup_object>([&](proposal_lookup_object& pl_o) {
+                pl_o.proposal = op.external_id;
+                pl_o.account = op.proposer;
+            });
+        }
+    }
+
+
     void operator()(const create_proposal_operation& op) const
     {
         const auto& db = _plugin.database();
@@ -136,6 +202,10 @@ struct post_operation_visitor
                 ps_o.approvals.insert(std::make_pair(approver, signer_info));
             }
 
+            ps_o.active_approvals.insert(op.active_approvals_to_add.begin(), op.active_approvals_to_add.end());
+            ps_o.owner_approvals.insert(op.owner_approvals_to_add.begin(), op.owner_approvals_to_add.end());
+            ps_o.key_approvals.insert(op.key_approvals_to_add.begin(), op.key_approvals_to_add.end());
+
             flat_set<account_name_type> revokers;
             revokers.insert(op.active_approvals_to_remove.begin(), op.active_approvals_to_remove.end());
             revokers.insert(op.owner_approvals_to_remove.begin(), op.owner_approvals_to_remove.end());
@@ -148,6 +218,34 @@ struct post_operation_visitor
                     ps_o.approvals.erase(itr);
                 }
             }
+
+            for (const auto& active_approval : ps_o.active_approvals)
+            {
+                const auto& itr = ps_o.active_approvals.find(active_approval);
+                if (itr != ps_o.active_approvals.end())
+                {
+                    ps_o.active_approvals.erase(itr);
+                }
+            }
+
+            for (const auto& owner_approval : ps_o.owner_approvals)
+            {
+                const auto& itr = ps_o.owner_approvals.find(owner_approval);
+                if (itr != ps_o.owner_approvals.end())
+                {
+                    ps_o.owner_approvals.erase(itr);
+                }
+            }
+
+            for (const auto& key_approval : ps_o.key_approvals)
+            {
+                const auto& itr = ps_o.key_approvals.find(key_approval);
+                if (itr != ps_o.key_approvals.end())
+                {
+                    ps_o.key_approvals.erase(itr);
+                }
+            }
+
         });
     }
 

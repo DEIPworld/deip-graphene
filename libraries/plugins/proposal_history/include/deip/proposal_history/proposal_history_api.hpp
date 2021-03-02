@@ -36,6 +36,8 @@ public:
 
     std::vector<proposal_state_api_obj> get_proposals_states(const flat_set<external_id_type>& external_ids) const;
 
+    std::vector<proposal_state_api_obj> lookup_proposals_states(const proposal_state_id_type& lower_bound, uint32_t limit) const;
+
 private: 
     std::unique_ptr<detail::proposal_history_api_impl> _impl;
 
@@ -50,5 +52,6 @@ FC_API(deip::proposal_history::proposal_history_api,
   (get_proposals_by_signers)
   (get_proposal_state)
   (get_proposals_states)
+  (lookup_proposals_states)
 )
 

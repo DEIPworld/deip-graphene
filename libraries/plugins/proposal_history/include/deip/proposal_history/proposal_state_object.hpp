@@ -44,6 +44,10 @@ public:
     flat_map<account_name_type, tx_info> approvals;
     flat_map<account_name_type, tx_info> rejectors;
 
+    flat_set<account_name_type> owner_approvals;
+    flat_set<account_name_type> active_approvals;
+    flat_set<public_key_type> key_approvals;
+
     transaction proposed_transaction;
     shared_string fail_reason;
     time_point_sec expiration_time;
@@ -141,6 +145,9 @@ FC_REFLECT(deip::proposal_history::proposal_state_object,
           (required_approvals)
           (approvals)
           (rejectors)
+          (owner_approvals)
+          (active_approvals)
+          (key_approvals)
           (proposed_transaction)
           (fail_reason)
           (expiration_time)
