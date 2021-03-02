@@ -848,22 +848,20 @@ void database::init_genesis_proposals(const genesis_state_type& genesis_state)
               key_to_remove
             );
         }
-        else
-        {
-            const auto& expiration_time = p.expiration_time > genesis_time ? p.expiration_time : genesis_time;
-            push_virtual_operation(proposal_initialized_operation(
-              p.external_id,
-              p.status,
-              p.proposer,
-              p.serialized_proposed_transaction,
-              expiration_time,
-              genesis_time,
-              p.review_period_seconds,
-              p.active_approvals,
-              p.owner_approvals,
-              p.key_approvals
-            ));
-        } 
+
+        const auto& expiration_time = p.expiration_time > genesis_time ? p.expiration_time : genesis_time;
+        push_virtual_operation(proposal_initialized_operation(
+          p.external_id,
+          p.status,
+          p.proposer,
+          p.serialized_proposed_transaction,
+          expiration_time,
+          genesis_time,
+          p.review_period_seconds,
+          p.active_approvals,
+          p.owner_approvals,
+          p.key_approvals
+        ));
     }
 }
 

@@ -175,7 +175,10 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     const auto& default_assets = asset_service.get_default_assets();
     for (const asset_object& default_asset : default_assets)
     {
-        account_balance_service.create_account_balance(account_name, default_asset.symbol, 0);
+        if (!account_balance_service.account_balance_exists_by_owner_and_asset(account_name, default_asset.symbol)) 
+        {
+            account_balance_service.create_account_balance(account_name, default_asset.symbol, 0);
+        }
     }
 
     dgp_service.create_recent_entity(account_name);
