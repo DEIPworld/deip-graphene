@@ -38,6 +38,7 @@ public:
     external_id_type subaward_number;
 
     research_id_type research_id;
+    external_id_type research_external_id;
     account_name_type awardee;
     account_name_type source; // for subawardees
     asset total_amount;
@@ -112,6 +113,7 @@ FC_REFLECT(deip::chain::award_recipient_object,
   (award_number)
   (subaward_number)
   (research_id)
+  (research_external_id)
   (awardee)
   (source)
   (total_amount)

@@ -31,8 +31,11 @@ public:
     funding_opportunity_id_type id;
 
     research_group_id_type organization_id;
+    external_id_type organization_external_id;
     research_group_id_type review_committee_id;
+    external_id_type review_committee_external_id;
     research_group_id_type treasury_id;
+    external_id_type treasury_external_id;
 
     account_name_type grantor;
     external_id_type funding_opportunity_number;
@@ -147,8 +150,11 @@ FC_REFLECT_ENUM(deip::chain::funding_opportunity_distribution_type,
 FC_REFLECT(deip::chain::funding_opportunity_object,
         (id)
         (organization_id)
+        (organization_external_id)
         (review_committee_id)
+        (review_committee_external_id)
         (treasury_id)
+        (treasury_external_id)
         (grantor)
         (funding_opportunity_number)
         (additional_info)

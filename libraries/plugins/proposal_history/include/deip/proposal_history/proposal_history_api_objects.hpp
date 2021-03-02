@@ -38,6 +38,26 @@ struct proposal_state_api_obj
         {
             review_period_time = *proposal.review_period_time;
         }
+
+        for (const auto& approval : proposal.active_approvals)
+        {
+            active_approvals.insert(approval);
+        }
+
+        for (const auto& approval : proposal.owner_approvals)
+        {
+            owner_approvals.insert(approval);
+        }
+
+        for (const auto& approval : proposal.key_approvals)
+        {
+            key_approvals.insert(approval);
+        }
+
+        std::stringstream ss;
+        fc::raw::pack(ss, proposal.proposed_transaction);
+        std::string packed_trx = ss.str();
+        serialized_proposed_transaction = fc::base64_encode( packed_trx );
     }
 
     int64_t id;
@@ -56,7 +76,13 @@ struct proposal_state_api_obj
     flat_map<account_name_type, tx_info> approvals;
     flat_map<account_name_type, tx_info> rejectors;
 
+
+    flat_set<account_name_type> active_approvals;
+    flat_set<account_name_type> owner_approvals;
+    flat_set<public_key_type> key_approvals;
+
     transaction proposed_transaction;
+    string serialized_proposed_transaction;
     optional<time_point_sec> review_period_time;
 
 };
@@ -76,6 +102,10 @@ FC_REFLECT(deip::proposal_history::proposal_state_api_obj,
   (required_approvals)
   (approvals)
   (rejectors)
+  (active_approvals)
+  (owner_approvals)
+  (key_approvals)
   (proposed_transaction)
+  (serialized_proposed_transaction)
   (review_period_time)
 )

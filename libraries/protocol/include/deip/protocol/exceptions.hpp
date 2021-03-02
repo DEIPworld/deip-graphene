@@ -16,6 +16,8 @@ FC_DECLARE_EXCEPTION(transaction_exception, 3000000, "transaction exception")
 FC_DECLARE_DERIVED_EXCEPTION(
     tx_missing_active_auth, deip::protocol::transaction_exception, 3010000, "missing required active authority")
 FC_DECLARE_DERIVED_EXCEPTION(
+    tx_missing_tenant_auth, deip::protocol::transaction_exception, 3010000, "missing required tenant authority")
+FC_DECLARE_DERIVED_EXCEPTION(
     tx_missing_owner_auth, deip::protocol::transaction_exception, 3020000, "missing required owner authority")
 FC_DECLARE_DERIVED_EXCEPTION(
     tx_missing_other_auth, deip::protocol::transaction_exception, 3040000, "missing required other authority")

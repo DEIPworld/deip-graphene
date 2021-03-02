@@ -835,11 +835,6 @@ public:
     vector<vesting_balance_api_obj> get_vesting_balances(const std::string& account_name);
 
     /**
-     *  Gets research group details
-     */
-    fc::optional<research_group_api_obj> get_research_group_by_permlink(const std::string& permlink);
-
-    /**
      *  Gets proposal details
      */
     fc::optional<proposal_api_obj> get_proposal(const external_id_type& proposal_id);
@@ -860,18 +855,6 @@ public:
     fc::optional<research_content_api_obj> get_research_content(const int64_t id);
 
     /**
-     *  Gets research content by permlink
-     */
-    fc::optional<research_content_api_obj> get_research_content_by_permlink(const int64_t research_id, const string& permlink);
-
-    /**
-     *  Gets research content by absolute permlink
-     */
-    fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink,
-                                                                       const string& research_permlink,
-                                                                       const string& research_content_permlink);
-
-    /**
      *  Gets the list of research contents by type
      */
     vector<research_content_api_obj> get_research_contents_by_type(const int64_t research_id, const uint16_t type);
@@ -880,16 +863,6 @@ public:
      *  Gets the research by id
      */
     fc::optional<research_api_obj> get_research(const int64_t research_id);
-
-    /**
-     *  Gets the research by permlink
-     */
-    fc::optional<research_api_obj> get_research_by_permlink(const int64_t research_group_id, const string& permlink);
-
-    /**
-     *  Gets the research by absolute permlink
-     */
-    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink);
 
     /**
      *  Gets the list of researches by id research group
@@ -1024,8 +997,8 @@ public:
                                               const uint16_t& min_number_of_positive_reviews,
                                               const uint16_t& min_number_of_applications,
                                               const uint16_t& max_number_of_research_to_grant,
-                                              const uint32_t& start_date,
-                                              const uint32_t& end_date,
+                                              const uint32_t& start_time,
+                                              const uint32_t& end_time,
                                               const bool broadcast);
 
     annotated_signed_transaction create_grant_application(const std::string& funding_opportunity_number,
@@ -1129,17 +1102,12 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active) )
         (list_my_research_tokens)
         (list_account_research_tokens)
         (get_vesting_balances)
-        (get_research_group_by_permlink)
         (get_proposal)
         (get_proposals_by_creator)
         (list_research_token_sales)
         (get_research_content)
-        (get_research_content_by_permlink)
-        (get_research_content_by_absolute_permlink)
         (get_research_contents_by_type)
         (get_research)
-        (get_research_by_permlink)
-        (get_research_by_absolute_permlink)
         (get_researches_by_research_group)
         (list_my_research_groups)
         (list_my_researches)

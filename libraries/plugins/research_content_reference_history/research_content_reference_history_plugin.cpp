@@ -56,10 +56,14 @@ class research_content_reference_operation_visitor
     database& _db;
     const research_content_reference_operation_object& _obj;
     const int64_t& _research_content_id;
+    const external_id_type& _research_content_external_id;
     const int64_t& _research_id;
+    const external_id_type& _research_external_id;
     const std::string& _content;
     const int64_t& _research_content_reference_id;
+    const external_id_type& _research_content_reference_external_id;
     const int64_t& _research_reference_id;
+    const external_id_type& _research_reference_external_id;
     const std::string& _content_reference;
 
 public:
@@ -67,28 +71,31 @@ public:
     research_content_reference_operation_visitor(database& db,
                                                  const research_content_reference_operation_object& obj,
                                                  const int64_t& research_content_id,
+                                                 const external_id_type& research_content_external_id,
                                                  const int64_t& research_id,
+                                                 const external_id_type& research_external_id,
                                                  const std::string& content,
                                                  const int64_t& research_content_reference_id,
+                                                 const external_id_type& research_content_reference_external_id,
                                                  const int64_t& research_reference_id,
+                                                 const external_id_type& research_reference_external_id,
                                                  const std::string& content_reference)
         : _db(db)
         , _obj(obj)
         , _research_content_id(research_content_id)
+        , _research_content_external_id(research_content_external_id)
         , _research_id(research_id)
+        , _research_external_id(research_external_id)
         , _content(content)
         , _research_content_reference_id(research_content_reference_id)
+        , _research_content_reference_external_id(research_content_reference_external_id)
         , _research_reference_id(research_reference_id)
+        , _research_reference_external_id(research_reference_external_id)
         , _content_reference(content_reference)
     {
     }
 
     template <typename Op> void operator()(const Op&) const
-    {
-        push_history<research_content_reference_operations_history_object>(_obj);
-    }
-
-    void operator()(const token_sale_contribution_to_history_operation& op) const
     {
         push_history<research_content_reference_operations_history_object>(_obj);
     }
@@ -99,10 +106,14 @@ private:
         _db.create<research_content_reference_history_object_type>([&](research_content_reference_history_object_type& research_content_ref_history) {
             research_content_ref_history.op = op.id;
             research_content_ref_history.research_content_id = _research_content_id;
+            research_content_ref_history.research_content_external_id = _research_content_external_id;
             research_content_ref_history.research_id = _research_id;
+            research_content_ref_history.research_external_id = _research_external_id;
             fc::from_string(research_content_ref_history.content, _content);
             research_content_ref_history.research_content_reference_id = _research_content_reference_id;
+            research_content_ref_history.research_content_reference_external_id = _research_content_reference_external_id;
             research_content_ref_history.research_reference_id = _research_reference_id;
+            research_content_ref_history.research_reference_external_id = _research_reference_external_id;
             fc::from_string(research_content_ref_history.content_reference, _content_reference);
         });
     }
@@ -131,14 +142,20 @@ void research_content_reference_history_plugin_impl::on_operation(const operatio
     if (note.op.which() == operation::tag<research_content_reference_history_operation>::value) {
 
         research_content_reference_history_operation op = note.op.get<research_content_reference_history_operation>();
-        int64_t research_content_id = op.research_content_id;
-        int64_t research_id = op.research_id;
-        std::string content = op.content;
-        int64_t research_content_reference_id = op.research_content_reference_id;
-        int64_t research_reference_id = op.research_reference_id;
-        std::string content_reference = op.content_reference;
-
-        note.op.visit(research_content_reference_operation_visitor(db, new_obj, research_content_id, research_id, content, research_content_reference_id, research_reference_id, content_reference));
+        note.op.visit(research_content_reference_operation_visitor(
+          db, 
+          new_obj, 
+          op.research_content_id,
+          op.research_content_external_id, 
+          op.research_id, 
+          op.research_external_id, 
+          op.content, 
+          op.research_content_reference_id, 
+          op.research_content_reference_external_id, 
+          op.research_reference_id, 
+          op.research_reference_external_id, 
+          op.content_reference)
+        );
     }
 }
 

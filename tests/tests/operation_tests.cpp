@@ -1855,7 +1855,6 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
             fc::from_string(r.description, "abstract");
-            fc::from_string(r.permlink, "permlink");
             r.research_group_id = 31;
             r.is_finished = false;
             r.created_at = db.head_block_time();

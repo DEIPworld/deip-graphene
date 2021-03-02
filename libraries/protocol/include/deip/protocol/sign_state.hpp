@@ -24,10 +24,12 @@ struct sign_state
 
     bool remove_unused_signatures();
 
-    sign_state(const flat_set<public_key_type>& sigs,
-               const authority_getter& active_getter,
-               const authority_getter& owner_getter,
-               const flat_set<public_key_type>& keys);
+    sign_state(
+      const flat_set<public_key_type>& sigs,
+      const authority_getter& active_getter,
+      const authority_getter& owner_getter,
+      const flat_set<public_key_type>& keys
+    );
 
     const authority_getter& get_active;
     const authority_getter& get_owner;

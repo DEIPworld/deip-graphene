@@ -4,6 +4,7 @@
 namespace deip {
 namespace protocol {
 
+// DEPRECATED
 struct decline_nda_contract_operation : public base_operation
 {
     int64_t contract_id;

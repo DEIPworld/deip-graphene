@@ -82,26 +82,38 @@ struct token_sale_contribution_to_history_operation : public virtual_operation
 struct research_content_reference_history_operation : public virtual_operation
 {
     research_content_reference_history_operation() {}
-    research_content_reference_history_operation(const int64_t& research_content_id, 
+    research_content_reference_history_operation(const int64_t& research_content_id,
+                                                 const external_id_type& research_content_external_id,
                                                  const int64_t& research_id,
-                                                 const std::string& content, 
+                                                 const external_id_type& research_external_id,
+                                                 const std::string& content,
                                                  const int64_t& research_content_reference_id,
+                                                 const external_id_type& research_content_reference_external_id,
                                                  const int64_t& research_reference_id,
+                                                 const external_id_type& research_reference_external_id,
                                                  const std::string& content_reference)
         : research_content_id(research_content_id)
+        , research_content_external_id(research_content_external_id)
         , research_id(research_id)
+        , research_external_id(research_external_id)
         , content(content)
         , research_content_reference_id(research_content_reference_id)
+        , research_content_reference_external_id(research_content_reference_external_id)
         , research_reference_id(research_reference_id)
+        , research_reference_external_id(research_reference_external_id)
         , content_reference(content_reference)
     {
     }
 
     int64_t research_content_id;
+    external_id_type research_content_external_id;
     int64_t research_id;
+    external_id_type research_external_id;
     std::string content;
     int64_t research_content_reference_id;
+    external_id_type research_content_reference_external_id;
     int64_t research_reference_id;
+    external_id_type research_reference_external_id;
     std::string content_reference;
 };
 
@@ -212,6 +224,63 @@ struct proposal_status_changed_operation : public virtual_operation
     uint8_t status;
 };
 
+
+struct proposal_initialized_operation : public virtual_operation
+{
+    proposal_initialized_operation()
+    {
+    }
+    proposal_initialized_operation( const external_id_type& external_id,
+                                    const uint8_t& status,
+                                    const account_name_type& proposer,
+                                    const string& serialized_proposed_transaction,
+                                    const time_point_sec& expiration_time,
+                                    const time_point_sec& created_at,
+                                    const optional<time_point_sec>& review_period,
+                                    const flat_set<account_name_type>& available_active_approvals,
+                                    const flat_set<account_name_type>& available_owner_approvals,
+                                    const flat_set<public_key_type>& available_key_approvals)
+        : external_id(external_id)
+        , status(status)
+        , proposer(proposer)
+        , serialized_proposed_transaction(serialized_proposed_transaction)
+        , expiration_time(expiration_time)
+        , created_at(created_at)
+    {
+        if (review_period.valid())
+        {
+            review_period_time = *review_period;
+        }
+
+        for (const auto& approver : available_active_approvals)
+        {
+            active_approvals.insert(approver);
+        }
+
+        for (const auto& approver : available_owner_approvals)
+        {
+            owner_approvals.insert(approver);
+        }
+
+        for (const auto& approver : key_approvals)
+        {
+            key_approvals.insert(approver);
+        }
+    }
+
+    external_id_type external_id;
+    uint8_t status;
+    account_name_type proposer;
+    string serialized_proposed_transaction;
+    time_point_sec expiration_time;
+    time_point_sec created_at;
+    optional<time_point_sec> review_period_time;
+    flat_set<account_name_type> active_approvals;
+    flat_set<account_name_type> owner_approvals;
+    flat_set<public_key_type> key_approvals;
+};
+
+
 }
 } // deip::protocol
 
@@ -220,10 +289,11 @@ FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
 FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_token_sale_id)(contributor)(amount))
-FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))
+FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_content_external_id)(research_id)(research_external_id)(content)(research_content_reference_id)(research_content_reference_external_id)(research_reference_id)(research_reference_external_id)(content_reference))
 FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(recipient_type)(diff))
 FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (contributions)(timestamp))
 FC_REFLECT(deip::protocol::account_revenue_income_history_operation, (account)(security_token)(revenue)(timestamp))
 FC_REFLECT(deip::protocol::proposal_status_changed_operation, (external_id)(status))
+FC_REFLECT(deip::protocol::proposal_initialized_operation, (external_id)(status)(proposer)(serialized_proposed_transaction)(expiration_time)(created_at)(review_period_time)(active_approvals)(owner_approvals)(key_approvals))

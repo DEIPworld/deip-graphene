@@ -70,12 +70,12 @@ typedef fc::static_variant<create_account_operation, // 0
                            reject_award_withdrawal_request_operation, // 43
                            pay_award_withdrawal_request_operation, // 44
 
-                           create_nda_contract_operation, // 45
-                           sign_nda_contract_operation, // 46
-                           decline_nda_contract_operation, // 47
-                           close_nda_contract_operation, // 48
-                           create_request_by_nda_contract_operation, // 49
-                           fulfill_request_by_nda_contract_operation, // 50
+                           create_research_nda_operation, // 45
+                           sign_nda_contract_operation, // 46 DEPRECATED
+                           decline_nda_contract_operation, // 47 DEPRECATED
+                           close_nda_contract_operation, // 48 DEPRECATED
+                           create_nda_content_access_request_operation, // 49
+                           fulfill_nda_content_access_request_operation, // 50
 
                            create_assessment_operation, // 51
                            create_research_license_operation,
@@ -92,7 +92,8 @@ typedef fc::static_variant<create_account_operation, // 0
                            account_eci_history_operation,
                            disciplines_eci_history_operation,
                            account_revenue_income_history_operation,
-                           proposal_status_changed_operation>
+                           proposal_status_changed_operation,
+                           proposal_initialized_operation>
 
     operation;
 

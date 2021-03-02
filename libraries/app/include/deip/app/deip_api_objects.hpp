@@ -381,7 +381,6 @@ struct research_group_api_obj
         : id(rg_o.id._id)
         , external_id(rg_o.account)
         , creator(rg_o.creator)
-        , permlink(fc::to_string(rg_o.permlink))
         , description(fc::to_string(rg_o.description))
         , quorum_percent(rg_o.default_quorum)
         , is_dao(rg_o.is_dao)
@@ -395,7 +394,6 @@ struct research_group_api_obj
         : id(rg_o.id._id)
         , external_id(rg_o.account)
         , creator(rg_o.creator)
-        , permlink(fc::to_string(rg_o.permlink))
         , description(fc::to_string(rg_o.description))
         , quorum_percent(rg_o.default_quorum)
         , is_dao(rg_o.is_dao)
@@ -412,7 +410,6 @@ struct research_group_api_obj
     int64_t id;
     external_id_type external_id;
     account_name_type creator;
-    std::string permlink;
     std::string description;
     percent_type quorum_percent;
     bool is_dao;
@@ -431,7 +428,6 @@ struct research_api_obj
         , external_id(r_o.external_id)
         , research_group_id(r_o.research_group_id._id)
         , description(fc::to_string(r_o.description))
-        , permlink(fc::to_string(r_o.permlink))
         , is_finished(r_o.is_finished)
         , is_private(r_o.is_private)
         , created_at(r_o.created_at)
@@ -473,7 +469,6 @@ struct research_api_obj
     external_id_type external_id;
     int64_t research_group_id;
     std::string description;
-    std::string permlink;
     bool is_finished;
     bool is_private;
     time_point_sec created_at;
@@ -505,7 +500,6 @@ struct research_content_api_obj
         , authors(rc_o.authors.begin(), rc_o.authors.end())
         , description(fc::to_string(rc_o.description))
         , content(fc::to_string(rc_o.content))
-        , permlink(fc::to_string(rc_o.permlink))
         , activity_state(rc_o.activity_state)
         , activity_window_start(rc_o.activity_window_start)
         , activity_window_end(rc_o.activity_window_end)
@@ -535,7 +529,6 @@ struct research_content_api_obj
     std::set<account_name_type> authors;
     std::string description;
     std::string content;
-    std::string permlink;
     research_content_activity_state activity_state;
     fc::time_point_sec activity_window_start;
     fc::time_point_sec activity_window_end;
@@ -1034,24 +1027,27 @@ struct grant_application_review_api_obj
 struct funding_opportunity_api_obj
 {
     funding_opportunity_api_obj(const chain::funding_opportunity_object& fo_o)
-        :  id(fo_o.id._id)
-        ,  organization_id(fo_o.organization_id._id)
-        ,  review_committee_id(fo_o.review_committee_id._id)
-        ,  treasury_id(fo_o.treasury_id._id)
-        ,  grantor(fo_o.grantor)
-        ,  funding_opportunity_number(fo_o.funding_opportunity_number)
-        ,  amount(fo_o.amount)
-        ,  award_ceiling(fo_o.award_ceiling)
-        ,  award_floor(fo_o.award_floor)
-        ,  current_supply(fo_o.current_supply)
-        ,  expected_number_of_awards(fo_o.expected_number_of_awards)
-        ,  min_number_of_positive_reviews(fo_o.min_number_of_positive_reviews)
-        ,  min_number_of_applications(fo_o.min_number_of_applications)
-        ,  max_number_of_research_to_grant(fo_o.max_number_of_research_to_grant)
-        ,  posted_date(fo_o.posted_date)
-        ,  open_date(fo_o.open_date)
-        ,  close_date(fo_o.close_date)
-        ,  distribution_type(fo_o.distribution_type)
+        : id(fo_o.id._id)
+        , organization_id(fo_o.organization_id._id)
+        , organization_external_id(fo_o.organization_external_id)
+        , review_committee_id(fo_o.review_committee_id._id)
+        , review_committee_external_id(fo_o.review_committee_external_id)
+        , treasury_id(fo_o.treasury_id._id)
+        , treasury_external_id(fo_o.treasury_external_id)
+        , grantor(fo_o.grantor)
+        , funding_opportunity_number(fo_o.funding_opportunity_number)
+        , amount(fo_o.amount)
+        , award_ceiling(fo_o.award_ceiling)
+        , award_floor(fo_o.award_floor)
+        , current_supply(fo_o.current_supply)
+        , expected_number_of_awards(fo_o.expected_number_of_awards)
+        , min_number_of_positive_reviews(fo_o.min_number_of_positive_reviews)
+        , min_number_of_applications(fo_o.min_number_of_applications)
+        , max_number_of_research_to_grant(fo_o.max_number_of_research_to_grant)
+        , posted_date(fo_o.posted_date)
+        , open_date(fo_o.open_date)
+        , close_date(fo_o.close_date)
+        , distribution_type(fo_o.distribution_type)
     {
         for (auto& pair : fo_o.additional_info)
         {
@@ -1075,8 +1071,11 @@ struct funding_opportunity_api_obj
 
     int64_t id;
     research_group_id_type organization_id;
+    external_id_type organization_external_id;
     research_group_id_type review_committee_id;
+    external_id_type review_committee_external_id;
     research_group_id_type treasury_id;
+    external_id_type treasury_external_id;
 
     account_name_type grantor;
     external_id_type funding_opportunity_number;
@@ -1183,6 +1182,7 @@ struct award_recipient_api_obj
         , subaward_number(ar_o.subaward_number)
         , funding_opportunity_number(ar_o.funding_opportunity_number)
         , research_id(ar_o.research_id._id)
+        , research_external_id(ar_o.research_external_id)
         , awardee(ar_o.awardee)
         , source(ar_o.source)
         , total_amount(ar_o.total_amount)
@@ -1202,6 +1202,7 @@ struct award_recipient_api_obj
     external_id_type funding_opportunity_number;
 
     int64_t research_id;
+    external_id_type research_external_id;
     account_name_type awardee;
     account_name_type source;
     asset total_amount;
@@ -1220,6 +1221,7 @@ struct award_api_obj
         , status(award.status)
         , amount(award.amount)
         , university_id(award.university_id._id)
+        , university_external_id(award.university_external_id)
         , university_overhead(award.university_overhead)
     {
         awardees.insert(awardees.end(), awardees_list.begin(), awardees_list.end());
@@ -1240,6 +1242,7 @@ struct award_api_obj
     uint16_t status;
     asset amount;
     int64_t university_id;
+    external_id_type university_external_id;
     percent university_overhead;
     asset university_fee;
     vector<award_recipient_api_obj> awardees;
@@ -1285,21 +1288,14 @@ struct nda_contract_api_obj
 {
     nda_contract_api_obj(const chain::nda_contract_object& c_o)
         : id(c_o.id._id)
-        , contract_creator(c_o.contract_creator)
-        , party_a(c_o.party_a)
-        , party_a_research_group_id(c_o.party_a_research_group_id._id)
-        , party_b(c_o.party_b)
-        , party_b_research_group_id(c_o.party_b_research_group_id._id)
-        , disclosing_party(c_o.disclosing_party.begin(), c_o.disclosing_party.end())
-        , party_a_signature(fc::to_string(c_o.party_a_signature))
-        , party_b_signature(fc::to_string(c_o.party_b_signature))
-        , title(fc::to_string(c_o.title))
-        , contract_hash(fc::to_string(c_o.contract_hash))
-        , status(c_o.status)
+        , external_id(c_o.external_id)
+        , creator(c_o.creator)
+        , parties(c_o.parties.begin(), c_o.parties.end())
+        , description(fc::to_string(c_o.description))
+        , research_external_id(c_o.research_external_id)
         , created_at(c_o.created_at)
-        , start_date(c_o.start_date)
-        , end_date(c_o.end_date)
-
+        , start_time(c_o.start_time)
+        , end_time(c_o.end_time)
     {}
 
     // because fc::variant require for temporary object
@@ -1308,33 +1304,24 @@ struct nda_contract_api_obj
     }
 
     int64_t id;
-    account_name_type contract_creator;
+    external_id_type external_id;
+    account_name_type creator;
+    std::set<account_name_type> parties;
 
-    account_name_type party_a;
-    int64_t party_a_research_group_id;
-
-    account_name_type party_b;
-    int64_t party_b_research_group_id;
-
-    std::set<account_name_type> disclosing_party;
-
-    std::string party_a_signature;
-    std::string party_b_signature;
-
-    std::string title;
-    std::string contract_hash;
-    uint16_t status;
+    std::string description;
+    external_id_type research_external_id;
 
     fc::time_point_sec created_at;
-    fc::time_point_sec start_date;
-    fc::time_point_sec end_date;
+    fc::time_point_sec start_time;
+    fc::time_point_sec end_time;
 };
 
 struct nda_contract_file_access_api_obj
 {
     nda_contract_file_access_api_obj(const chain::nda_contract_file_access_object& cfa_o)
         : id(cfa_o.id._id)
-        , contract_id(cfa_o.contract_id._id)
+        , external_id(cfa_o.external_id)
+        , nda_external_id(cfa_o.nda_external_id)
         , status(cfa_o.status)
         , requester(cfa_o.requester)
         , encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
@@ -1350,7 +1337,8 @@ struct nda_contract_file_access_api_obj
     }
 
     int64_t id;
-    int64_t contract_id;
+    external_id_type external_id;
+    external_id_type nda_external_id;
     uint16_t status;
 
     account_name_type requester;
@@ -1469,7 +1457,6 @@ FC_REFLECT( deip::app::research_api_obj,
             (external_id)
             (research_group_id)
             (description)
-            (permlink)
             (is_finished)
             (is_private)
             (created_at)
@@ -1494,7 +1481,6 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (content_type)
             (description)
             (content)
-            (permlink)
             (authors)
             (activity_state)
             (activity_window_start)
@@ -1558,7 +1544,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (id)
             (external_id)
             (creator)
-            (permlink)
             (description)
             (quorum_percent)
             (is_dao)
@@ -1700,8 +1685,11 @@ FC_REFLECT( deip::app::grant_application_review_api_obj,
 FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (id)
             (organization_id)
+            (organization_external_id)
             (review_committee_id)
+            (review_committee_external_id)
             (treasury_id)
+            (treasury_external_id)
             (grantor)
             (funding_opportunity_number)
             (amount)
@@ -1754,6 +1742,7 @@ FC_REFLECT( deip::app::award_api_obj,
             (status)
             (amount)
             (university_id)
+            (university_external_id)
             (university_overhead)
             (university_fee)
             (awardees)
@@ -1765,6 +1754,7 @@ FC_REFLECT( deip::app::award_recipient_api_obj,
             (subaward_number)
             (funding_opportunity_number)
             (research_id)
+            (research_external_id)
             (awardee)
             (source)
             (total_amount)
@@ -1788,26 +1778,20 @@ FC_REFLECT( deip::app::award_withdrawal_request_api_obj,
 
 FC_REFLECT( deip::app::nda_contract_api_obj,
             (id)
-            (contract_creator)
-            (party_a)
-            (party_a_research_group_id)
-            (party_a_signature)
-            (party_b)
-            (party_b_research_group_id)
-            (party_b_signature)
-            (disclosing_party)
-            (title)
-            (contract_hash)
-            (status)
+            (external_id)
+            (creator)
+            (parties)
+            (description)
+            (research_external_id)
             (created_at)
-            (start_date)
-            (end_date)
-
+            (start_time)
+            (end_time)
 )
 
 FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (id)
-            (contract_id)
+            (external_id)
+            (nda_external_id)
             (status)
             (requester)
             (encrypted_payload_hash)

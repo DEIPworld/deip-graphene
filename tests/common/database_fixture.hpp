@@ -107,7 +107,6 @@ struct database_fixture
 
     const research_group_object& research_group_create(const int64_t& id,
                                                        const string& name,
-                                                       const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
                                                        const bool is_dao,
@@ -120,7 +119,6 @@ struct database_fixture
 
     const research_group_object& setup_research_group(const int64_t& id,
                                                       const string& name,
-                                                      const string& permlink,
                                                       const string& desciption,
                                                       const share_type funds,
                                                       const bool is_dao,
@@ -132,7 +130,6 @@ struct database_fixture
     const research_object& research_create(const int64_t id,
                                            const string& title,
                                            const string& abstract,
-                                           const string& permlink,
                                            const research_group_id_type& research_group_id);
 
     const research_token_object& research_token_create(const int64_t id, 

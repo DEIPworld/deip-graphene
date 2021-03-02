@@ -12,6 +12,8 @@ struct api_context;
 namespace deip {
 namespace research_content_references_history {
 
+using protocol::external_id_type;
+
 namespace detail {
 class research_content_reference_history_api_impl;
 }
@@ -28,7 +30,13 @@ public:
     get_content_references(const research_content_id_type& research_content_id) const;
 
     std::vector<applied_research_content_reference_operation>
+    get_content_references2(const external_id_type& research_content_external_id) const;
+
+    std::vector<applied_research_content_reference_operation>
     get_contents_refer_to_content(const research_content_id_type& research_content_id) const;
+
+    std::vector<applied_research_content_reference_operation>
+    get_contents_refer_to_content2(const external_id_type& research_content_external_id) const;
 
 private:
     std::unique_ptr<detail::research_content_reference_history_api_impl> _impl;
@@ -37,4 +45,8 @@ private:
 } // namespace deip
 
 FC_API(deip::research_content_references_history::research_content_reference_history_api,
-       (get_content_references)(get_contents_refer_to_content))
+      (get_content_references)
+      (get_content_references2)
+      (get_contents_refer_to_content)
+      (get_contents_refer_to_content2)
+)

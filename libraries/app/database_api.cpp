@@ -5,7 +5,6 @@
 #include <deip/protocol/get_config.hpp>
 
 #include <deip/chain/util/reward.hpp>
-#include <deip/chain/util/permlink.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -92,8 +91,6 @@ public:
     fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
     vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
     fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type& internal_id) const;
-    fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
-    /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
     vector<research_group_api_obj> get_research_groups_by_member(const account_name_type& member) const;
     vector<research_group_api_obj> lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
 
@@ -101,9 +98,6 @@ public:
     fc::optional<research_api_obj> get_research(const external_id_type& id) const;
     vector<research_api_obj> get_researches(const set<external_id_type>& ids) const;
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
-    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
-    /* [DEPRECATED] */ bool check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& title) const;
-    fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
     vector<research_api_obj> get_researches_by_research_group_member(const account_name_type& member) const;
     vector<research_api_obj> lookup_researches(const research_id_type& lower_bound, uint32_t limit) const;
@@ -112,15 +106,13 @@ public:
     fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
     vector<research_content_api_obj> get_research_contents(const set<external_id_type>& ids) const;
     fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
-    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
-    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
-    /* [DEPRECATED] */ bool check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const;
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
     vector<research_content_api_obj> lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const;
 
     // Research license
     fc::optional<research_license_api_obj> get_research_license(const external_id_type& external_id) const;
+    vector<research_license_api_obj> get_research_licenses(const set<external_id_type>& ids) const;
     vector<research_license_api_obj> get_research_licenses_by_licensee(const account_name_type& licensee) const;
     vector<research_license_api_obj> get_research_licenses_by_licenser(const account_name_type& licenser) const;
     vector<research_license_api_obj> get_research_licenses_by_research(const external_id_type& research_external_id) const;
@@ -243,22 +235,15 @@ public:
     vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_status(const string& award_number, const award_withdrawal_request_status& status) const;
 
     // NDA Contracts
-    fc::optional<nda_contract_api_obj> get_nda_contract(const nda_contract_id_type& id) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator(const account_name_type& party_a) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_signee(const account_name_type &party_b) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_hash(const string& hash) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group(const research_group_id_type& research_group_id) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group(const research_group_id_type& research_group_id) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id, const fc::string& hash) const;
+    fc::optional<nda_contract_api_obj> get_research_nda(const external_id_type& external_id) const;
+    vector<nda_contract_api_obj> get_research_nda_by_creator(const account_name_type& creator) const;
+    vector<nda_contract_api_obj> get_research_nda_by_hash(const string& hash) const;
+    vector<nda_contract_api_obj> get_research_nda_by_research(const external_id_type& external_id) const;
 
     // NDA Contracts Requests
-    fc::optional<nda_contract_file_access_api_obj> get_nda_contract_request(const nda_contract_file_access_id_type& id) const;
-    fc::optional<nda_contract_file_access_api_obj> get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const;
-    vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const;
-    vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_requester(const account_name_type& requester) const;
+    fc::optional<nda_contract_file_access_api_obj> get_nda_contract_content_access_request(const external_id_type& external_id) const;
+    vector<nda_contract_file_access_api_obj> get_nda_contract_content_access_requests_by_nda(const external_id_type& nda_external_id) const;
+    vector<nda_contract_file_access_api_obj> get_nda_contract_content_access_requests_by_requester(const account_name_type& requester) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -749,22 +734,30 @@ bool database_api::verify_authority(const signed_transaction& trx) const
 
 bool database_api_impl::verify_authority(const signed_transaction& trx) const
 {
-    trx.verify_authority(get_chain_id(),
-        [&](const string& account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).active);
-        },
-        [&](const string& account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).owner);
-        },
-        [&](const string& account_name, const uint16_t& op_tag) {
-            fc::optional<authority> result;
-            const auto& auth = _db.get<account_authority_object, by_account>(account_name);
-            if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
-            {
-                result = auth.active_overrides.at(op_tag);
-            }
-            return result;
-        });
+    auto get_active = [&](const string& account_name) {
+        return authority(_db.get<account_authority_object, by_account>(account_name).active);
+    };
+
+    auto get_owner = [&](const string& account_name) {
+        return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+    };
+
+    auto get_active_overrides = [&](const string& account_name, const uint16_t& op_tag) {
+        fc::optional<authority> result;
+        const auto& auth = _db.get<account_authority_object, by_account>(account_name);
+        if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
+        {
+            result = auth.active_overrides.at(op_tag);
+        }
+        return result;
+    };
+
+    trx.verify_authority(
+        get_chain_id(),
+        get_active,
+        get_owner,
+        get_active_overrides
+    );
     return true;
 }
 
@@ -1116,81 +1109,6 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_id(const resea
     return result;
 }
 
-fc::optional<research_api_obj> database_api::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_by_permlink(research_group_id, permlink); });
-}
-
-fc::optional<research_api_obj> database_api_impl::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
-{
-    fc::optional<research_api_obj> result;
-
-    const auto& research_service = _db.obtain_service<chain::dbs_research>();
-    const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
-    const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
-    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-
-    const auto& research_group_opt = research_groups_service.get_research_group_if_exists(research_group_id);
-
-    if (!research_group_opt.valid()) 
-    {
-        return result;
-    }
-
-    const auto& research_group = (*research_group_opt).get();
-    const auto& research_opt = research_service.get_research_by_permlink_if_exists(fc::to_string(research_group.permlink), permlink);
-
-    if (research_opt.valid()) 
-    {
-        const auto& research = (*research_opt).get();
-        vector<discipline_api_obj> disciplines;
-        const auto& discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
-        for (const chain::research_discipline_relation_object& discipline_relation : discipline_relations)
-        {
-            disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_external_id));
-        }
-
-        result = research_api_obj(research, disciplines, research_group_api_obj(research_group));
-    }
-
-    return result;
-}
-
-bool database_api::check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& title) const
-{
-    std::string permlink = deip::chain::util::generate_permlink(title);
-    return my->_db.with_read_lock([&]() { return my->check_research_existence_by_permlink(research_group_external_id, permlink); });
-}
-
-bool database_api_impl::check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& permlink) const
-{
-    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-    const auto& research_service = _db.obtain_service<chain::dbs_research>();
-    const auto& research_group = research_groups_service.get_research_group_by_account(research_group_external_id);
-
-    const auto& research_opt = research_service.get_research_by_permlink_if_exists(fc::to_string(research_group.permlink), permlink);
-    return research_opt.valid();
-}
-
-
-fc::optional<research_api_obj> database_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_by_absolute_permlink(research_group_permlink, research_permlink); });
-}
-
-fc::optional<research_api_obj> database_api_impl::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
-{
-    fc::optional<research_api_obj> research;
-    fc::optional<research_group_api_obj> research_group_opt = get_research_group_by_permlink(research_group_permlink);
-
-    if (research_group_opt.valid())
-    {
-        const research_group_api_obj& research_group = *research_group_opt;
-        research = get_research_by_permlink(research_group.id, research_permlink);
-    }
-
-    return research;
-}
 
 vector<research_api_obj> database_api::get_researches_by_research_group(const external_id_type& external_id) const
 {
@@ -1313,6 +1231,30 @@ fc::optional<research_license_api_obj> database_api_impl::get_research_license(c
         result = research_license_api_obj(research_license);
     }
     return result;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses(const set<external_id_type>& ids) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses(ids); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses(const set<external_id_type>& ids) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    for (const auto& external_id : ids)
+    {
+        const auto& research_license_opt = research_license_service.get_research_license_if_exists(external_id);
+        if (research_license_opt.valid())
+        {
+            const research_license_object& research_license = *research_license_opt;
+            results.push_back(research_license_api_obj(research_license));
+        }
+    }
+
+    return results;
 }
 
 
@@ -1477,83 +1419,6 @@ fc::optional<research_content_api_obj> database_api_impl::get_research_content_b
     }
     return result;
 }
-
-fc::optional<research_content_api_obj> database_api::get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_content_by_permlink(research_id, permlink); });
-}
-
-fc::optional<research_content_api_obj> database_api_impl::get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const
-{
-    fc::optional<research_content_api_obj> result;
-    const auto& research_service = _db.obtain_service<chain::dbs_research>();
-    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-    const auto& research_content_service = _db.obtain_service<chain::dbs_research_content>();
-
-    const auto& research_opt = research_service.get_research_if_exists(research_id);
-    if (!research_opt.valid())
-    {
-        return result;
-    }
-
-    const auto& research = (*research_opt).get();
-    const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-    const auto& research_group_permlink = fc::to_string(research_group.permlink);
-    const auto& research_permlink = fc::to_string(research.permlink);
-
-    const auto& research_content_opt = research_content_service.get_research_content_by_permlink_if_exists(research_group_permlink, research_permlink, permlink);
-    if (research_content_opt.valid())
-    {
-        const auto& research_content = (*research_content_opt).get();
-        result = research_content_api_obj(research_content);
-    }
-    return result;
-}
-
-fc::optional<research_content_api_obj> database_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink); });
-}
-
-fc::optional<research_content_api_obj> database_api_impl::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
-{
-    fc::optional<research_content_api_obj> research_content;
-    fc::optional<research_group_api_obj> research_group_opt = get_research_group_by_permlink(research_group_permlink);
-
-    if (research_group_opt.valid())
-    {
-        const research_group_api_obj& research_group = *research_group_opt;
-        fc::optional<research_api_obj> research_opt = get_research_by_permlink(research_group.id, research_permlink);
-        if (research_opt.valid())
-        {
-            research_content = get_research_content_by_permlink(research_opt->id, research_content_permlink);
-        }
-    }
-
-    return research_content;
-}
-
-
-bool database_api::check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const
-{
-    std::string permlink = deip::chain::util::generate_permlink(title);
-    return my->_db.with_read_lock([&]() { return my->check_research_content_existence_by_permlink(research_external_id, permlink); });
-}
-
-bool database_api_impl::check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& permlink) const
-{
-    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-    const auto& research_service = _db.obtain_service<chain::dbs_research>();
-    const auto& research_content_service = _db.obtain_service<chain::dbs_research_content>();
-
-    const auto& research = research_service.get_research(research_external_id);
-    const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-    const auto& research_content_opt = research_content_service.get_research_content_by_permlink_if_exists(fc::to_string(research_group.permlink), fc::to_string(research.permlink), permlink);
-    return research_content_opt.valid();
-}
-
 
 vector<research_content_api_obj> database_api::get_research_contents_by_research(const external_id_type& external_id) const
 {
@@ -1830,45 +1695,6 @@ fc::optional<research_group_api_obj> database_api_impl::get_research_group_by_id
     }
 
     return result;
-}
-
-fc::optional<research_group_api_obj> database_api::get_research_group_by_permlink(const string& permlink) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_group_by_permlink(permlink); });
-}
-
-fc::optional<research_group_api_obj> database_api_impl::get_research_group_by_permlink(const string& permlink) const
-{
-    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
-    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
-
-    fc::optional<research_group_api_obj> result;
-    const auto& research_group_opt = research_groups_service.get_research_group_by_permlink_if_exists(permlink);
-
-    if (research_group_opt.valid())
-    {
-        const auto& research_group = (*research_group_opt).get();
-        const auto& account = accounts_service.get_account(research_group.account);
-        const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
-        result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
-    }
-
-    return result;
-}
-
-bool database_api::check_research_group_existence_by_permlink(const string& name) const
-{
-    std::string permlink = deip::chain::util::generate_permlink(name);
-    return my->_db.with_read_lock([&]() { return my->check_research_group_existence_by_permlink(permlink); });
-}
-
-bool database_api_impl::check_research_group_existence_by_permlink(const string& permlink) const
-{
-    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-    const auto& research_group_opt = research_groups_service.get_research_group_by_permlink_if_exists(permlink);
-    return research_group_opt.valid();
 }
 
 vector<research_group_api_obj> database_api::get_research_groups_by_member(const account_name_type& member) const
@@ -3387,19 +3213,17 @@ vector<award_withdrawal_request_api_obj> database_api_impl::get_award_withdrawal
     return results;
 }
 
-fc::optional<nda_contract_api_obj> database_api::get_nda_contract(const nda_contract_id_type& id) const
+fc::optional<nda_contract_api_obj> database_api::get_research_nda(const external_id_type& external_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contract(id);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_research_nda(external_id); });
 }
 
-fc::optional<nda_contract_api_obj> database_api_impl::get_nda_contract(const nda_contract_id_type& id) const
+fc::optional<nda_contract_api_obj> database_api_impl::get_research_nda(const external_id_type& external_id) const
 {
     const auto& nda_contract_service = _db.obtain_service<chain::dbs_nda_contract>();
 
     fc::optional<nda_contract_api_obj> result;
-    const auto& opt = nda_contract_service.get_contract_if_exists(id);
+    const auto& opt = nda_contract_service.get_research_nda_if_exists(external_id);
 
     if (opt.valid())
     {
@@ -3409,21 +3233,17 @@ fc::optional<nda_contract_api_obj> database_api_impl::get_nda_contract(const nda
     return result;
 }
 
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator(const account_name_type& party_a) const
+vector<nda_contract_api_obj> database_api::get_research_nda_by_creator(const account_name_type& creator) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_creator(party_a);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_research_nda_by_creator(creator); });
 }
 
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_creator(const account_name_type& party_a) const
+vector<nda_contract_api_obj> database_api_impl::get_research_nda_by_creator(const account_name_type& creator) const
 {
     const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
 
     vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_creator(party_a);
+    const auto& contracts = contract_service.get_research_nda_by_creator(creator);
     for (auto& wrap : contracts)
     {
         const auto& contract = wrap.get();
@@ -3433,21 +3253,22 @@ database_api_impl::get_nda_contracts_by_creator(const account_name_type& party_a
     return results;
 }
 
+
 vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_signee(const account_name_type &party_b) const
+database_api::get_research_nda_by_hash(const std::string &hash) const
 {
     return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_signee(party_b);
+        return my->get_research_nda_by_hash(hash);
     });
 }
 
 vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_signee(const account_name_type &party_b) const
+database_api_impl::get_research_nda_by_hash(const std::string& hash) const
 {
     const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
 
     vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_signee(party_b);
+    const auto& contracts = contract_service.get_research_nda_by_hash(hash);
     for (auto& wrap : contracts)
     {
         const auto& contract = wrap.get();
@@ -3457,21 +3278,18 @@ database_api_impl::get_nda_contracts_by_signee(const account_name_type &party_b)
     return results;
 }
 
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_hash(const std::string &hash) const
+
+vector<nda_contract_api_obj> database_api::get_research_nda_by_research(const external_id_type& external_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_hash(hash);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_research_nda_by_research(external_id); });
 }
 
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_hash(const std::string &hash) const
+vector<nda_contract_api_obj> database_api_impl::get_research_nda_by_research(const external_id_type& external_id) const
 {
     const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
 
     vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_hash(hash);
+    const auto& contracts = contract_service.get_research_nda_by_research(external_id);
     for (auto& wrap : contracts)
     {
         const auto& contract = wrap.get();
@@ -3481,170 +3299,20 @@ database_api_impl::get_nda_contracts_by_hash(const std::string &hash) const
     return results;
 }
 
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator_research_group(const research_group_id_type &research_group_id) const
+
+fc::optional<nda_contract_file_access_api_obj>
+database_api::get_nda_contract_content_access_request(const external_id_type& external_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_creator_research_group(research_group_id);
-    });
-}
-
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_creator_research_group(const research_group_id_type &research_group_id) const
-{
-    const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
-
-    vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_creator_research_group(research_group_id);
-    for (auto& wrap : contracts)
-    {
-        const auto& contract = wrap.get();
-        results.push_back(contract);
-    }
-
-    return results;
-}
-
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_signee_research_group(const research_group_id_type &research_group_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_signee_research_group(research_group_id);
-    });
-}
-
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_signee_research_group(const research_group_id_type &research_group_id) const
-{
-    const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
-
-    vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_signee_research_group(research_group_id);
-    for (auto& wrap : contracts)
-    {
-        const auto& contract = wrap.get();
-        results.push_back(contract);
-    }
-
-    return results;
-}
-
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_creator_research_group_and_contract_hash(research_group_id, hash);
-    });
-}
-
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const
-{
-    const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
-
-    vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_creator_research_group_and_contract_hash(research_group_id, hash);
-    for (auto& wrap : contracts)
-    {
-        const auto& contract = wrap.get();
-        results.push_back(contract);
-    }
-
-    return results;
-}
-
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_signee_research_group_and_contract_hash(research_group_id, hash);
-    });
-}
-
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const
-{
-    const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
-
-    vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_signee_research_group_and_contract_hash(research_group_id, hash);
-    for (auto& wrap : contracts)
-    {
-        const auto& contract = wrap.get();
-        results.push_back(contract);
-    }
-
-    return results;
-}
-
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_creator_research_group_and_signee_research_group(party_a_research_group_id, party_b_research_group_id);
-    });
-}
-
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const
-{
-    const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
-
-    vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_creator_research_group_and_signee_research_group(party_a_research_group_id, party_b_research_group_id);
-    for (auto& wrap : contracts)
-    {
-        const auto& contract = wrap.get();
-        results.push_back(contract);
-    }
-
-    return results;
-}
-
-vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id,
-                                                                                                      const research_group_id_type& party_b_research_group_id,
-                                                                                                      const fc::string& hash) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(party_a_research_group_id, party_b_research_group_id, hash);
-    });
-}
-
-vector<nda_contract_api_obj>
-database_api_impl::get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id,
-                                                             const research_group_id_type& party_b_research_group_id,
-                                                             const fc::string& hash) const
-{
-    const auto& contract_service = _db.obtain_service<chain::dbs_nda_contract>();
-
-    vector<nda_contract_api_obj> results;
-    const auto& contracts = contract_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(
-        party_a_research_group_id, party_b_research_group_id, hash);
-    for (auto& wrap : contracts)
-    {
-        const auto& contract = wrap.get();
-        results.push_back(contract);
-    }
-
-    return results;
+    return my->_db.with_read_lock([&]() { return my->get_nda_contract_content_access_request(external_id); });
 }
 
 fc::optional<nda_contract_file_access_api_obj>
-database_api::get_nda_contract_request(const nda_contract_file_access_id_type& id) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contract_request(id);
-    });
-}
-
-fc::optional<nda_contract_file_access_api_obj>
-database_api_impl::get_nda_contract_request(const nda_contract_file_access_id_type& id) const
+database_api_impl::get_nda_contract_content_access_request(const external_id_type& external_id) const
 {
     const auto& contract_requests_service = _db.obtain_service<chain::dbs_nda_contract_requests>();
 
     fc::optional<nda_contract_file_access_api_obj> result;
-    const auto& opt = contract_requests_service.get_request_if_exists(id);
+    const auto& opt = contract_requests_service.get_content_access_request_if_exists(external_id);
 
     if (opt.valid())
     {
@@ -3655,20 +3323,20 @@ database_api_impl::get_nda_contract_request(const nda_contract_file_access_id_ty
 }
 
 vector<nda_contract_file_access_api_obj>
-database_api::get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const
+database_api::get_nda_contract_content_access_requests_by_nda(const external_id_type& nda_external_id) const
 {
     return my->_db.with_read_lock([&]() {
-        return my->get_nda_contract_requests_by_contract_id(contract_id);
+        return my->get_nda_contract_content_access_requests_by_nda(nda_external_id);
     });
 }
 
 vector<nda_contract_file_access_api_obj>
-database_api_impl::get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const
+database_api_impl::get_nda_contract_content_access_requests_by_nda(const external_id_type& nda_external_id) const
 {
     const auto& contract_requests_service = _db.obtain_service<chain::dbs_nda_contract_requests>();
 
     vector<nda_contract_file_access_api_obj> results;
-    const auto& requests = contract_requests_service.get_by_contract_id(contract_id);
+    const auto& requests = contract_requests_service.get_content_access_requests_by_nda(nda_external_id);
     for (auto& wrap : requests)
     {
         const auto& request = wrap.get();
@@ -3679,20 +3347,20 @@ database_api_impl::get_nda_contract_requests_by_contract_id(const nda_contract_i
 }
 
 vector<nda_contract_file_access_api_obj>
-database_api::get_nda_contract_requests_by_requester(const account_name_type& requester) const
+database_api::get_nda_contract_content_access_requests_by_requester(const account_name_type& requester) const
 {
     return my->_db.with_read_lock([&]() {
-        return my->get_nda_contract_requests_by_requester(requester);
+        return my->get_nda_contract_content_access_requests_by_requester(requester);
     });
 }
 
 vector<nda_contract_file_access_api_obj>
-database_api_impl::get_nda_contract_requests_by_requester(const account_name_type& requester) const
+database_api_impl::get_nda_contract_content_access_requests_by_requester(const account_name_type& requester) const
 {
     const auto& contract_requests_service = _db.obtain_service<chain::dbs_nda_contract_requests>();
 
     vector<nda_contract_file_access_api_obj> results;
-    const auto& requests = contract_requests_service.get_by_requester(requester);
+    const auto& requests = contract_requests_service.get_content_access_requests_by_requester(requester);
     for (auto& wrap : requests)
     {
         const auto& request = wrap.get();
@@ -3701,31 +3369,6 @@ database_api_impl::get_nda_contract_requests_by_requester(const account_name_typ
 
     return results;
 }
-
-fc::optional<nda_contract_file_access_api_obj>
-database_api::get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const
-{
-    return my->_db.with_read_lock([&]() {
-        return my->get_nda_contract_request_by_contract_id_and_hash(contract_id, encrypted_payload_hash);
-    });
-}
-
-fc::optional<nda_contract_file_access_api_obj>
-database_api_impl::get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const
-{
-    const auto& contract_requests_service = _db.obtain_service<chain::dbs_nda_contract_requests>();
-
-    fc::optional<nda_contract_file_access_api_obj> result;
-    const auto& opt = contract_requests_service.get_request_by_contract_id_and_hash_if_exists(contract_id, encrypted_payload_hash);
-
-    if (opt.valid())
-    {
-        result = nda_contract_file_access_api_obj(*opt);
-    }
-
-    return result;
-}
-
 
 } // namespace app
 } // namespace deip

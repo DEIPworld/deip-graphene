@@ -17,12 +17,12 @@
 #include <deip/protocol/operations/approve_award_withdrawal_request_operation.hpp>
 #include <deip/protocol/operations/reject_award_withdrawal_request_operation.hpp>
 #include <deip/protocol/operations/pay_award_withdrawal_request_operation.hpp>
-#include <deip/protocol/operations/create_nda_contract_operation.hpp>
+#include <deip/protocol/operations/create_research_nda_operation.hpp>
 #include <deip/protocol/operations/sign_nda_contract_operation.hpp>
 #include <deip/protocol/operations/decline_nda_contract_operation.hpp>
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
-#include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
-#include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
+#include <deip/protocol/operations/create_nda_content_access_request_operation.hpp>
+#include <deip/protocol/operations/fulfill_nda_content_access_request_operation.hpp>
 #include <deip/protocol/operations/join_research_group_membership_operation.hpp>
 #include <deip/protocol/operations/leave_research_group_membership_operation.hpp>
 #include <deip/protocol/operations/create_research_operation.hpp>
@@ -72,12 +72,6 @@ inline void validate_award_number(const string& number)
 inline void validate_account_name(const string& name)
 {
     FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
-}
-
-inline void validate_permlink(const string& permlink)
-{
-    FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "permlink is too long");
-    FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
 }
 
 inline void validate_enum_value_by_range(uint16_t val, uint16_t first, uint16_t last)

@@ -21,11 +21,13 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -102,7 +104,9 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_expert_tokens(genesis_state);
         init_genesis_research(genesis_state);
         init_genesis_research_content(genesis_state);
+        init_genesis_research_content_reviews(genesis_state);
         init_genesis_vesting_balances(genesis_state);
+        init_genesis_proposals(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -172,6 +176,58 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         );
     }
 }
+
+
+void database::init_genesis_research_content_reviews(const genesis_state_type& genesis_state)
+{
+    auto& review_service = obtain_service<dbs_review>();
+    auto& research_content_service = obtain_service<dbs_research_content>();
+    auto& disciplines_service = obtain_service<dbs_discipline>();
+
+    const vector<genesis_state_type::research_content_review_type>& research_contents_reviews = genesis_state.research_contents_reviews;
+
+    for (const auto& research_content_review : research_contents_reviews)
+    {
+        const auto& research_content = research_content_service.get_research_content(research_content_review.research_content_external_id);
+
+        const int32_t& assessment_model_type = 1;
+        flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
+        multicriteria_scoring_assessment_model_type assessment_model;
+        for (const auto& score : research_content_review.scores)
+        {
+            assessment_model.scores.insert(std::make_pair(score.first, score.second));
+            assessment_criterias.insert(std::make_pair(score.first, assessment_criteria_value(score.second)));
+        }
+
+        const assessment_criteria_value total_score = std::accumulate(std::begin(assessment_model.scores), std::end(assessment_model.scores), assessment_criteria_value(0),
+            [&](assessment_criteria_value total, const std::map<uint16_t, uint16_t>::value_type& m) { return total + assessment_criteria_value(m.second); });
+
+        const bool& is_positive = total_score >= (assessment_criteria_value) DEIP_MIN_POSITIVE_REVIEW_SCORE;
+        
+        std::set<discipline_id_type> review_disciplines;
+        std::map<discipline_id_type, share_type> review_used_expertise_by_disciplines;
+        for (const auto& discipline_external_id : research_content_review.disciplines)
+        {
+            const auto& discipline = disciplines_service.get_discipline(discipline_external_id);
+            review_disciplines.insert(discipline.id);
+            review_used_expertise_by_disciplines.insert(std::make_pair(discipline.id, DEIP_DEFAULT_EXPERTISE_AMOUNT));
+        }
+
+        review_service.create_review(
+          research_content_review.external_id,
+          research_content.research_external_id,
+          research_content.external_id,
+          research_content.id,
+          research_content_review.content,
+          is_positive,
+          research_content_review.author,
+          review_disciplines,
+          review_used_expertise_by_disciplines,
+          assessment_model_type,
+          assessment_criterias
+        );
+    }
+} 
 
 
 void database::init_genesis_assets(const genesis_state_type& genesis_state)
@@ -384,8 +440,6 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
-    dbs_asset& asset_service = obtain_service<dbs_asset>();
-
     dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
@@ -430,61 +484,61 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           genesis_time
         );
 
-        const share_type SECURITY_TOKEN_MAX_SUPPLY = 10000;
-        const int SECURITY_TOKEN_SYMBOL_MAX_SIZE = 6;
-        const int SECURITY_TOKEN_SYMBOL_MIN_SIZE = 3;
-        std::string SECURITY_TOKEN_SYMBOL;
+        // const share_type SECURITY_TOKEN_MAX_SUPPLY = 10000;
+        // const int SECURITY_TOKEN_SYMBOL_MAX_SIZE = 6;
+        // const int SECURITY_TOKEN_SYMBOL_MIN_SIZE = 3;
+        // std::string SECURITY_TOKEN_SYMBOL;
 
-        for (int i = 0; (i < (research.description.size() - 1) && SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MAX_SIZE); i++)
-        {
-            const char& ch = research.description[i];
-            if (SECURITY_TOKEN_SYMBOL.size() == 0 && isalpha(ch))
-            {
-                SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch)));
-            }
-            if (isblank(ch))
-            {
-                const char& ch2 = research.description[i + 1];
-                if (isalpha(ch2))
-                {
-                    SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch2)));
-                }
-            }
-        }
+        // for (int i = 0; (i < (research.description.size() - 1) && SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MAX_SIZE); i++)
+        // {
+        //     const char& ch = research.description[i];
+        //     if (SECURITY_TOKEN_SYMBOL.size() == 0 && isalpha(ch))
+        //     {
+        //         SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch)));
+        //     }
+        //     if (isblank(ch))
+        //     {
+        //         const char& ch2 = research.description[i + 1];
+        //         if (isalpha(ch2))
+        //         {
+        //             SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch2)));
+        //         }
+        //     }
+        // }
 
-        if (!fc::is_utf8(SECURITY_TOKEN_SYMBOL) || SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MIN_SIZE)
-        {
-            SECURITY_TOKEN_SYMBOL = std::string();
+        // if (!fc::is_utf8(SECURITY_TOKEN_SYMBOL) || SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MIN_SIZE)
+        // {
+        //     SECURITY_TOKEN_SYMBOL = std::string();
 
-            const int MAX = 26;
-            char alphabet[MAX] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                                   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+        //     const int MAX = 26;
+        //     char alphabet[MAX] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        //                            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
-            for (int i = 0; i < SECURITY_TOKEN_SYMBOL_MAX_SIZE; i++)
-            {
-                SECURITY_TOKEN_SYMBOL.push_back(alphabet[rand() % MAX]);
-            }
-        }
+        //     for (int i = 0; i < SECURITY_TOKEN_SYMBOL_MAX_SIZE; i++)
+        //     {
+        //         SECURITY_TOKEN_SYMBOL.push_back(alphabet[rand() % MAX]);
+        //     }
+        // }
 
-        optional<std::reference_wrapper<const research_object>> tokenized_research;
-        tokenized_research = created_research;
+        // optional<std::reference_wrapper<const research_object>> tokenized_research;
+        // tokenized_research = created_research;
 
-        optional<percent> license_revenue_holders_share;
-        license_revenue_holders_share = percent(DEIP_100_PERCENT);
+        // optional<percent> license_revenue_holders_share;
+        // license_revenue_holders_share = percent(DEIP_100_PERCENT);
 
-        std::string str_asset = std::to_string(SECURITY_TOKEN_MAX_SUPPLY.value) + " " + SECURITY_TOKEN_SYMBOL;
-        const asset security_token = asset::from_string(str_asset);
-        const auto& asset_o = asset_service.create_asset(research_group.account, 
-                                                         security_token.symbol,
-                                                         security_token.symbol_name(), 
-                                                         security_token.decimals(), 
-                                                         0,
-                                                         SECURITY_TOKEN_MAX_SUPPLY, 
-                                                         "", 
-                                                         tokenized_research,
-                                                         license_revenue_holders_share);
+        // std::string str_asset = std::to_string(SECURITY_TOKEN_MAX_SUPPLY.value) + " " + SECURITY_TOKEN_SYMBOL;
+        // const asset security_token = asset::from_string(str_asset);
+        // const auto& asset_o = asset_service.create_asset(research_group.account, 
+        //                                                  security_token.symbol,
+        //                                                  security_token.symbol_name(), 
+        //                                                  security_token.decimals(), 
+        //                                                  0,
+        //                                                  SECURITY_TOKEN_MAX_SUPPLY, 
+        //                                                  "", 
+        //                                                  tokenized_research,
+        //                                                  license_revenue_holders_share);
 
-        asset_service.issue_asset(asset_o, research_group.account, security_token);
+        // asset_service.issue_asset(asset_o, research_group.account, security_token);
     }
 }
 
@@ -536,10 +590,14 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
             const auto& reference = research_content_service.get_research_content(reference_external_id);
             push_virtual_operation(research_content_reference_history_operation(
                 created_research_content.id._id, 
+                created_research_content.external_id,
                 created_research_content.research_id._id,
+                created_research_content.research_external_id,
                 fc::to_string(created_research_content.content),
-                reference.id._id, 
+                reference.id._id,
+                reference.external_id,
                 reference.research_id._id,
+                reference.research_external_id,
                 fc::to_string(reference.content)
             ));
         }
@@ -662,6 +720,18 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
         active_authority.add_authority(account_name_type(member.name), 1);
     }
 
+    if (research_group.account != research_group.tenant)
+    {
+        owner_authority.add_authority(account_name_type(research_group.tenant), 1);
+        active_authority.add_authority(account_name_type(research_group.tenant), 1); 
+    }
+
+    if (research_group.public_key != public_key_type()) 
+    {
+        owner_authority.add_authority(public_key_type(research_group.public_key), 1);
+        active_authority.add_authority(public_key_type(research_group.public_key), 1);
+    }
+
     research_group_trait rg_trait;
     rg_trait.description = research_group.description;
 
@@ -728,6 +798,75 @@ void database::init_genesis_vesting_balances(const genesis_state_type& genesis_s
         });
     }
 }
+
+void database::init_genesis_proposals(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::proposal_type>& proposals = genesis_state.proposals;
+    auto& proposal_service = obtain_service<dbs_proposal>();
+    const auto& genesis_time = get_genesis_time();
+
+    for (const auto& p : proposals)
+    {
+        if (p.status == 1) // proposal_status::pending
+        {
+            FC_ASSERT(p.expiration_time > genesis_time, "Proposal ${1} is expired on creation", ("1", p.external_id));
+            
+            std::stringstream ss;
+            transaction proposed_transaction;
+            std::string packed_trx = fc::base64_decode(p.serialized_proposed_transaction);
+            ss.str(packed_trx);
+            fc::raw::unpack(ss, proposed_transaction);
+            
+            flat_set<account_name_type> required_active;
+            flat_set<account_name_type> required_owner;
+            vector<authority> other;
+
+            for (const auto& op : proposed_transaction.operations)
+            {
+                deip::protocol::operation_get_required_authorities(op, required_active, required_owner, other);
+            }
+
+            const auto& proposal = proposal_service.create_proposal(
+              p.external_id,
+              proposed_transaction,
+              p.expiration_time,
+              p.proposer,
+              p.review_period_seconds,
+              required_owner,
+              required_active
+            );
+
+            flat_set<account_name_type> acc_to_remove;
+            flat_set<public_key_type> key_to_remove;
+            proposal_service.update_proposal(
+              proposal, 
+              p.owner_approvals,
+              p.active_approvals,
+              acc_to_remove,
+              acc_to_remove,
+              p.key_approvals,
+              key_to_remove
+            );
+        }
+        else
+        {
+            const auto& expiration_time = p.expiration_time > genesis_time ? p.expiration_time : genesis_time;
+            push_virtual_operation(proposal_initialized_operation(
+              p.external_id,
+              p.status,
+              p.proposer,
+              p.serialized_proposed_transaction,
+              expiration_time,
+              genesis_time,
+              p.review_period_seconds,
+              p.active_approvals,
+              p.owner_approvals,
+              p.key_approvals
+            ));
+        } 
+    }
+}
+
 
 } // namespace chain
 } // namespace deip

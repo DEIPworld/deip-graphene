@@ -37,6 +37,7 @@ public:
     account_name_type awardee;
 
     research_group_id_type university_id;
+    external_id_type university_external_id;
     percent university_overhead;
 
     account_name_type creator;
@@ -112,6 +113,7 @@ FC_REFLECT(deip::chain::award_object,
   (award_number)
   (awardee)
   (university_id)
+  (university_external_id)
   (university_overhead)
   (creator)
   (status)

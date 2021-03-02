@@ -307,7 +307,6 @@ struct post_operation_visitor
     void operator()(const disciplines_eci_history_operation& op) const
     {
         const auto& disciplines_service = _plugin.database().obtain_service<chain::dbs_discipline>();
-        const auto& expert_tokens_service = _plugin.database().obtain_service<chain::dbs_expert_token>();
         const auto& expertise_contribution_service = _plugin.database().obtain_service<chain::dbs_expertise_contribution>();
 
         const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);

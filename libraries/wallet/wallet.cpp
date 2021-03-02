@@ -725,24 +725,32 @@ public:
             return it->second;
         };
 
-        auto minimal_signing_keys = tx.minimize_required_signatures(
-            _chain_id, available_keys,
-            [&](const string& account_name) -> const deip::protocol::authority {
-                return (get_account_from_lut(account_name).active);
-            },
-            [&](const string& account_name) -> const deip::protocol::authority {
-                return (get_account_from_lut(account_name).owner);
-            },
-            [&](const string& account_name, const uint16_t& op_tag) {
-                fc::optional<deip::protocol::authority> result;
-                const auto& account = get_account_from_lut(account_name);
-                if (account.active_overrides.find(op_tag) != account.active_overrides.end())
-                {
-                    result = account.active_overrides.at(op_tag);
-                    return result;
-                }
+        auto get_active = [&](const string& account_name) -> const deip::protocol::authority {
+            return (get_account_from_lut(account_name).active);
+        };
+
+        auto get_owner =  [&](const string& account_name) -> const deip::protocol::authority {
+            return (get_account_from_lut(account_name).owner);
+        };
+
+        auto get_active_overrides = [&](const string& account_name, const uint16_t& op_tag) {
+            fc::optional<deip::protocol::authority> result;
+            const auto& account = get_account_from_lut(account_name);
+            if (account.active_overrides.find(op_tag) != account.active_overrides.end())
+            {
+                result = account.active_overrides.at(op_tag);
                 return result;
-            });
+            }
+            return result;
+        };
+
+        auto minimal_signing_keys = tx.minimize_required_signatures(
+            _chain_id, 
+            available_keys,
+            get_active,
+            get_owner,
+            get_active_overrides
+        );
 
         for (const public_key_type& k : minimal_signing_keys)
         {
@@ -2130,11 +2138,6 @@ vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::stri
     return result;
 }
 
-fc::optional<research_group_api_obj> wallet_api::get_research_group_by_permlink(const std::string& permlink)
-{
-    return my->_remote_db->get_research_group_by_permlink({ permlink });
-}
-
 fc::optional<proposal_api_obj> wallet_api::get_proposal(const external_id_type& proposal_id)
 {
     return my->_remote_db->get_proposal(proposal_id);
@@ -2157,16 +2160,6 @@ fc::optional<research_content_api_obj> wallet_api::get_research_content(const in
     return my->_remote_db->get_research_content_by_id(id);
 }
 
-fc::optional<research_content_api_obj> wallet_api::get_research_content_by_permlink(const int64_t research_id, const string& permlink)
-{
-    return my->_remote_db->get_research_content_by_permlink(research_id, permlink);
-}
-
-fc::optional<research_content_api_obj> wallet_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink)
-{
-    return my->_remote_db->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink);
-}
-
 vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const int64_t research_id, const uint16_t type)
 {
     return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
@@ -2175,16 +2168,6 @@ vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const
 fc::optional<research_api_obj> wallet_api::get_research(const int64_t research_id)
 {
     return my->_remote_db->get_research_by_id(research_id);
-}
-
-fc::optional<research_api_obj> wallet_api::get_research_by_permlink(const int64_t research_group_id, const string& permlink)
-{
-    return my->_remote_db->get_research_by_permlink(research_group_id, permlink);
-}
-
-fc::optional<research_api_obj> wallet_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink)
-{
-    return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
 }
 
 vector<research_api_obj> wallet_api::get_researches_by_research_group(const external_id_type& external_id) const

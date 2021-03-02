@@ -549,7 +549,6 @@ public:
 
         const auto& db = _app.chain_database();
         const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_id>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
         for (auto itr = discipline_hist_idx.lower_bound(discipline_eci_history_id_type(0)); limit-- && itr != discipline_hist_idx.end(); ++itr)

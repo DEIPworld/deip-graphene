@@ -28,7 +28,6 @@ public:
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
             r.description = "Research #1";
-            r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
             r.is_finished = false;
             r.created_at = db.head_block_time();
@@ -42,7 +41,6 @@ public:
             rc.type = research_content_type::milestone_data;
             rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
-            rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
         });
@@ -54,7 +52,6 @@ public:
             rc.type = research_content_type::milestone_data;
             rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
-            rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
         });
@@ -66,7 +63,6 @@ public:
             rc.type = research_content_type::final_result;
             rc.description = "title for final result for Research #1";
             rc.content = "final result for Research #1";
-            rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
         });
@@ -75,7 +71,6 @@ public:
 
             r.id = 2;
             r.description = "Research #2";
-            r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
             r.is_finished = false;
             r.created_at = db.head_block_time();
@@ -89,7 +84,6 @@ public:
             rc.type = research_content_type::announcement;
             rc.description = "title for announcement for Research #2";
             rc.content = "announcement for Research #2";
-            rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
         });
@@ -104,7 +98,6 @@ public:
             rc.type = research_content_type::milestone_data;
             rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
-            rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
         });
@@ -116,7 +109,6 @@ public:
             rc.type = research_content_type::milestone_book;
             rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
-            rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
         });
@@ -128,7 +120,6 @@ public:
             rc.type = research_content_type::final_result;
             rc.description = "title for final result for Research #1";
             rc.content = "final result for Research #1";
-            rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
         });
@@ -140,7 +131,6 @@ public:
             rc.type = research_content_type::announcement;
             rc.description = "title for announcement for Research #2";
             rc.content = "announcement for Research #2";
-            rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
         });

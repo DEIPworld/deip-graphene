@@ -109,6 +109,26 @@
         "public_key": "DEIP6TcshvA9QU9PNFQqe6heyZ9DyKQbg25fc5a2xCLYiyMq2jXt2M"
     }],
 
+    "0000000000000000000000000000000000000000": [{
+        "private_key": "5Ke9KmpLDMbKkGsy9jCNNisQnEnkwy5f3gvvBkLLjiAFRwtPYau",
+        "public_key": "DEIP6gBwv3yQeUfnXxUdxxeynNvpbXU8iNSS46GP9mhFRfDvnp9PJT"
+    }],
+
+    "1169d704f8a908016033efe8cce6df93f618a265": [{
+        "private_key": "5JNh28dHx2PReJJYpvGTsNEUHnntgg7qc1qk9cHpxZauVrkAF8e",
+        "public_key": "DEIP5s7Ud4kr4wDsnMRXsRKYw1jqtv5CjTZz2aZqYGAobKLZjGNLzq"
+    }],
+
+    "c8a87b12c23f53866acd397f43b591fd4e631419": [{
+        "private_key": "5KCiL4i3v9H5Nh6BSEb257rErE1DjfKTh4g6bxPbeEUkFbjPsFQ",
+        "public_key": "DEIP7a1XdvQePkhUXR5q8TAStfZMmn2n4EPayNDxpNfVMkHZNqnxTz"
+    }],
+
+    "58e3bfd753fcb860a66b82635e43524b285ab708": [{
+        "private_key": "5Jvdx4prz4FStSfz5QMSBQ1K2MebdVJFKWZxtjnEjR2GhR3aPUN",
+        "public_key": "DEIP7WaVkyRVPkojAT1YVknt6ph6k2uoRGZs4jYYWThPXurYCM7CPX"
+    }],
+
     "initdelegate1": [{
         "private_key": "5JgGXpUFNiZuWSu2DD1ewFTM6WEthN6gueq86meHDFcGNtg5wfF",
         "public_key": "DEIP6GGrScrv5S8MDwAiQrg5Tvh4KPndcEV7ZDu8f9zfQ96gfTsNXP"
