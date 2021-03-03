@@ -13,7 +13,7 @@ struct create_research_nda_operation : public entity_operation
     account_name_type creator;
     std::set<account_name_type> parties;
     string description;
-    external_id_type research_external_id;
+    optional<external_id_type> research_external_id;
     optional<fc::time_point_sec> start_time;
     fc::time_point_sec end_time;
 

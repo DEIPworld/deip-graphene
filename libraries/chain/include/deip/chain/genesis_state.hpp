@@ -104,6 +104,18 @@ struct genesis_state_type
         flat_set<protocol::external_id_type> disciplines;
         flat_map<uint16_t, uint16_t> scores;
     };
+
+    struct proposal_type 
+    {
+        protocol::external_id_type external_id;
+        string proposer;
+        optional<uint32_t> review_period_seconds;
+        time_point_sec expiration_time;
+        flat_set<account_name_type> active_approvals;
+        flat_set<account_name_type> owner_approvals;
+        flat_set<protocol::public_key_type> key_approvals;
+        string serialized_proposed_transaction;
+    };
  
     struct vesting_balance_type
     {
@@ -140,6 +152,7 @@ struct genesis_state_type
     std::vector<research_content_type> research_contents;
     std::vector<vesting_balance_type> vesting_balances;
     std::vector<research_content_review_type> research_contents_reviews;
+    std::vector<proposal_type> proposals;
 
     chain_id_type initial_chain_id;
 };
@@ -225,6 +238,17 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_review_type,
           (disciplines)
           (scores)
 )
+ 
+FC_REFLECT(deip::chain::genesis_state_type::proposal_type,
+          (external_id)
+          (proposer)
+          (review_period_seconds)
+          (expiration_time)
+          (active_approvals)
+          (owner_approvals)
+          (key_approvals)
+          (serialized_proposed_transaction)
+)
 
 FC_REFLECT(deip::chain::genesis_state_type::vesting_balance_type,
            (id)
@@ -251,5 +275,6 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (initial_chain_id)
            (vesting_balances)
            (research_contents_reviews)
+           (proposals)
 )
 // clang-format on

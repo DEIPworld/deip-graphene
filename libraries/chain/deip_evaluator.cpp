@@ -1978,12 +1978,14 @@ void create_research_nda_evaluator::do_apply(const create_research_nda_operation
     
     fc::time_point_sec block_time = _db.head_block_time();
     fc::time_point_sec start_time = op.start_time.valid() ? *op.start_time : block_time;
+    FC_ASSERT(op.research_external_id.valid(), "Research must be specifed"); // TEMP
+    const external_id_type& research_external_id = *(op.research_external_id);
 
-    FC_ASSERT(research_service.research_exists(op.research_external_id),
+    FC_ASSERT(research_service.research_exists(research_external_id),
       "Research ${1} does not exist",
-      ("1", op.research_external_id));
+      ("1", research_external_id));
 
-    const auto& research = research_service.get_research(op.research_external_id);
+    const auto& research = research_service.get_research(research_external_id);
 
     FC_ASSERT(op.parties.find(research.research_group) != op.parties.end(), 
       "Research group ${1} of the research ${2} must be specified as a party", 
@@ -2005,7 +2007,7 @@ void create_research_nda_evaluator::do_apply(const create_research_nda_operation
                                               op.creator,
                                               op.parties,
                                               op.description,
-                                              op.research_external_id,
+                                              research_external_id,
                                               start_time,
                                               op.end_time);
 }

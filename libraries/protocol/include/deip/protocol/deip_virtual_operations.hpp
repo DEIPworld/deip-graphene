@@ -224,6 +224,61 @@ struct proposal_status_changed_operation : public virtual_operation
     uint8_t status;
 };
 
+
+struct proposal_initialized_operation : public virtual_operation
+{
+    proposal_initialized_operation()
+    {
+    }
+    proposal_initialized_operation( const external_id_type& external_id,
+                                    const account_name_type& proposer,
+                                    const string& serialized_proposed_transaction,
+                                    const time_point_sec& expiration_time,
+                                    const time_point_sec& created_at,
+                                    const optional<time_point_sec>& review_period,
+                                    const flat_set<account_name_type>& available_active_approvals,
+                                    const flat_set<account_name_type>& available_owner_approvals,
+                                    const flat_set<public_key_type>& available_key_approvals)
+        : external_id(external_id)
+        , proposer(proposer)
+        , serialized_proposed_transaction(serialized_proposed_transaction)
+        , expiration_time(expiration_time)
+        , created_at(created_at)
+    {
+        if (review_period.valid())
+        {
+            review_period_time = *review_period;
+        }
+
+        for (const auto& approver : available_active_approvals)
+        {
+            active_approvals.insert(approver);
+        }
+
+        for (const auto& approver : available_owner_approvals)
+        {
+            owner_approvals.insert(approver);
+        }
+
+        for (const auto& approver : key_approvals)
+        {
+            key_approvals.insert(approver);
+        }
+    }
+
+    external_id_type external_id;
+    uint8_t status;
+    account_name_type proposer;
+    string serialized_proposed_transaction;
+    time_point_sec expiration_time;
+    time_point_sec created_at;
+    optional<time_point_sec> review_period_time;
+    flat_set<account_name_type> active_approvals;
+    flat_set<account_name_type> owner_approvals;
+    flat_set<public_key_type> key_approvals;
+};
+
+
 }
 } // deip::protocol
 
@@ -239,3 +294,4 @@ FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_i
 FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (contributions)(timestamp))
 FC_REFLECT(deip::protocol::account_revenue_income_history_operation, (account)(security_token)(revenue)(timestamp))
 FC_REFLECT(deip::protocol::proposal_status_changed_operation, (external_id)(status))
+FC_REFLECT(deip::protocol::proposal_initialized_operation, (external_id)(proposer)(serialized_proposed_transaction)(expiration_time)(created_at)(review_period_time)(active_approvals)(owner_approvals)(key_approvals))

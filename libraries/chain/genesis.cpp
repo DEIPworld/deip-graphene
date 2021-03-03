@@ -27,6 +27,7 @@
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -105,6 +106,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_research_content(genesis_state);
         init_genesis_research_content_reviews(genesis_state);
         init_genesis_vesting_balances(genesis_state);
+        init_genesis_proposals(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -796,6 +798,68 @@ void database::init_genesis_vesting_balances(const genesis_state_type& genesis_s
         });
     }
 }
+
+void database::init_genesis_proposals(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::proposal_type>& proposals = genesis_state.proposals;
+    auto& proposal_service = obtain_service<dbs_proposal>();
+    const auto& genesis_time = get_genesis_time();
+
+    for (const auto& p : proposals)
+    {
+        FC_ASSERT(p.expiration_time > genesis_time, "Proposal ${1} is expired on creation", ("1", p.external_id));
+        
+        std::stringstream ss;
+        transaction proposed_transaction;
+        std::string packed_trx = fc::base64_decode(p.serialized_proposed_transaction);
+        ss.str(packed_trx);
+        fc::raw::unpack(ss, proposed_transaction);
+        
+        flat_set<account_name_type> required_active;
+        flat_set<account_name_type> required_owner;
+        vector<authority> other;
+
+        for (const auto& op : proposed_transaction.operations)
+        {
+            deip::protocol::operation_get_required_authorities(op, required_active, required_owner, other);
+        }
+
+        const auto& proposal = proposal_service.create_proposal(
+          p.external_id,
+          proposed_transaction,
+          p.expiration_time,
+          p.proposer,
+          p.review_period_seconds,
+          required_owner,
+          required_active
+        );
+
+        flat_set<account_name_type> acc_to_remove;
+        flat_set<public_key_type> key_to_remove;
+        proposal_service.update_proposal(
+          proposal, 
+          p.owner_approvals,
+          p.active_approvals,
+          acc_to_remove,
+          acc_to_remove,
+          p.key_approvals,
+          key_to_remove
+        );
+
+        push_virtual_operation(proposal_initialized_operation(
+          p.external_id,
+          p.proposer,
+          p.serialized_proposed_transaction,
+          p.expiration_time,
+          genesis_time,
+          p.review_period_seconds,
+          p.active_approvals,
+          p.owner_approvals,
+          p.key_approvals
+        ));
+    }
+}
+
 
 } // namespace chain
 } // namespace deip
