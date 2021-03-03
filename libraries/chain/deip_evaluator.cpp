@@ -1978,8 +1978,8 @@ void create_research_nda_evaluator::do_apply(const create_research_nda_operation
     
     fc::time_point_sec block_time = _db.head_block_time();
     fc::time_point_sec start_time = op.start_time.valid() ? *op.start_time : block_time;
-    FC_ASSERT(op.research_external_id.valid(), "Research must be specifed"); // TEMP
-    const external_id_type& research_external_id = *(op.research_external_id);
+    FC_ASSERT(op.researches.size() == 1, "Research must be specifed"); // TEMP
+    const external_id_type& research_external_id = *(op.researches.begin());
 
     FC_ASSERT(research_service.research_exists(research_external_id),
       "Research ${1} does not exist",

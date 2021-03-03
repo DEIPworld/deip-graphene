@@ -13,7 +13,7 @@ struct create_research_nda_operation : public entity_operation
     account_name_type creator;
     std::set<account_name_type> parties;
     string description;
-    optional<external_id_type> research_external_id;
+    flat_set<external_id_type> researches;
     optional<fc::time_point_sec> start_time;
     fc::time_point_sec end_time;
 
@@ -42,7 +42,7 @@ FC_REFLECT( deip::protocol::create_research_nda_operation,
     (creator)
     (parties)
     (description)
-    (research_external_id)
+    (researches)
     (start_time)
     (end_time)
     (extensions)
