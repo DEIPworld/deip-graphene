@@ -94,8 +94,8 @@ const proposal_object& dbs_proposal::create_proposal(
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
     const auto block_time = db_impl().head_block_time();
 
-    FC_ASSERT(proposed_trx.expiration == expiration_time,
-      "Proposal expiration time must be equal to proposed transaction expiration time");
+    // FC_ASSERT(proposed_trx.expiration == expiration_time,
+    //   "Proposal expiration time must be equal to proposed transaction expiration time");
 
     std::vector<account_name_type> owner_active_diff;
 
