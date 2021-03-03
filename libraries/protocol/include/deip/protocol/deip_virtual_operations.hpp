@@ -231,7 +231,6 @@ struct proposal_initialized_operation : public virtual_operation
     {
     }
     proposal_initialized_operation( const external_id_type& external_id,
-                                    const uint8_t& status,
                                     const account_name_type& proposer,
                                     const string& serialized_proposed_transaction,
                                     const time_point_sec& expiration_time,
@@ -241,7 +240,6 @@ struct proposal_initialized_operation : public virtual_operation
                                     const flat_set<account_name_type>& available_owner_approvals,
                                     const flat_set<public_key_type>& available_key_approvals)
         : external_id(external_id)
-        , status(status)
         , proposer(proposer)
         , serialized_proposed_transaction(serialized_proposed_transaction)
         , expiration_time(expiration_time)
@@ -296,4 +294,4 @@ FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_i
 FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (contributions)(timestamp))
 FC_REFLECT(deip::protocol::account_revenue_income_history_operation, (account)(security_token)(revenue)(timestamp))
 FC_REFLECT(deip::protocol::proposal_status_changed_operation, (external_id)(status))
-FC_REFLECT(deip::protocol::proposal_initialized_operation, (external_id)(status)(proposer)(serialized_proposed_transaction)(expiration_time)(created_at)(review_period_time)(active_approvals)(owner_approvals)(key_approvals))
+FC_REFLECT(deip::protocol::proposal_initialized_operation, (external_id)(proposer)(serialized_proposed_transaction)(expiration_time)(created_at)(review_period_time)(active_approvals)(owner_approvals)(key_approvals))

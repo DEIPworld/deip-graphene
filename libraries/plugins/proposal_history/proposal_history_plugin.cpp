@@ -92,7 +92,7 @@ struct post_operation_visitor
         const auto& proposal_state = _plugin.database().create<proposal_state_object>([&](proposal_state_object& ps_o) {
             ps_o.external_id = op.external_id;
             ps_o.proposer = op.proposer;
-            ps_o.status = op.status;
+            ps_o.status = static_cast<uint8_t>(proposal_status::pending);
 
             for (const auto& approver : required_approvals)
             {

@@ -108,7 +108,6 @@ struct genesis_state_type
     struct proposal_type 
     {
         protocol::external_id_type external_id;
-        uint8_t status;
         string proposer;
         optional<uint32_t> review_period_seconds;
         time_point_sec expiration_time;
@@ -242,7 +241,6 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_review_type,
  
 FC_REFLECT(deip::chain::genesis_state_type::proposal_type,
           (external_id)
-          (status)
           (proposer)
           (review_period_seconds)
           (expiration_time)
