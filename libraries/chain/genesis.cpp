@@ -702,8 +702,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
 {
     auto& account_service = obtain_service<dbs_account>();
     auto& research_groups_service = obtain_service<dbs_research_group>();
-
-    FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
     
     const auto& creator = account_service.get_account(research_group.creator);
 
@@ -713,23 +711,36 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     auto active_authority = authority();
     active_authority.weight_threshold = 1;
 
-    for (auto& member_name : research_group.members)
+    for (const auto& member_name : research_group.members)
     {
         const auto& member = account_service.get_account(member_name);
         owner_authority.add_authority(account_name_type(member.name), 1);
         active_authority.add_authority(account_name_type(member.name), 1);
     }
 
-    if (research_group.account != research_group.tenant)
+    // legacy/deprecated
+    if (research_group.tenant != account_name_type() && research_group.account != research_group.tenant)
     {
         owner_authority.add_authority(account_name_type(research_group.tenant), 1);
         active_authority.add_authority(account_name_type(research_group.tenant), 1); 
     }
-
+    // legacy/deprecated
     if (research_group.public_key != public_key_type()) 
     {
         owner_authority.add_authority(public_key_type(research_group.public_key), 1);
         active_authority.add_authority(public_key_type(research_group.public_key), 1);
+    }
+
+    for (const auto& account_auth : research_group.account_auths)
+    {
+        owner_authority.add_authority(account_auth.first, account_auth.second);
+        active_authority.add_authority(account_auth.first, account_auth.second);
+    }
+
+    for (const auto& key_auth : research_group.key_auths)
+    {
+        owner_authority.add_authority(key_auth.first, key_auth.second);
+        active_authority.add_authority(key_auth.first, key_auth.second);
     }
 
     research_group_trait rg_trait;
@@ -756,7 +767,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
 
     const auto& rg = research_groups_service.get_research_group_by_account(research_group.account);
 
-    for (auto& member_name : research_group.members)
+    for (const auto& member_name : research_group.members)
     {
         if (member_name != creator.name)
         {
