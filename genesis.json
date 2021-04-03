@@ -58,15 +58,20 @@
   "expert_tokens": [],
   "research_groups": [
     {
-      "account": "0000000000000000000000000000000000000000",
-      "public_key": "DEIP6gBwv3yQeUfnXxUdxxeynNvpbXU8iNSS46GP9mhFRfDvnp9PJT",
+      "account": "3333333333333333333333333333333333333333",
+      "key_auths": [["DEIP6gBwv3yQeUfnXxUdxxeynNvpbXU8iNSS46GP9mhFRfDvnp9PJT", 1]],
       "creator": "alice",
       "description": "94c70f3ca2398ac96f730c505ca6f8737c264f86c9a3e25c27ede7b127d2d702",
       "members": [
         "alice",
         "bob"
-      ],
-      "tenant": "0000000000000000000000000000000000000000"
+      ]
+    },
+    {
+      "account": "4444444444444444444444444444444444444444",
+      "account_auths": [["3333333333333333333333333333333333333333", 1]],
+      "creator": "3333333333333333333333333333333333333333",
+      "description": "2aab2f2b4613ab12f4e5292d762534145fc6081030a5d958866909965f1d03ce"
     }
   ],
   "researches": [],
