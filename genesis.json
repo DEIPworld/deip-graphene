@@ -1,11 +1,9 @@
 {
   "initial_timestamp": "2021-01-01T00:00:00",
-  "init_supply": 1000000000000,
   "registrar_account": {
     "name": "regacc",
     "recovery_account": "",
-    "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa",
-    "common_tokens_amount": 1000000000000
+    "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa"
   },
   "accounts": [
     {
@@ -14,12 +12,12 @@
       "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
     },
     {
-      "name": "alice",
+      "name": "egonzalez",
       "recovery_account": "",
       "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"
     },
     {
-      "name": "bob",
+      "name": "kat-austen",
       "recovery_account": "",
       "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"
     }
@@ -58,20 +56,22 @@
   "expert_tokens": [],
   "research_groups": [
     {
-      "account": "3333333333333333333333333333333333333333",
+      "account": "fc712435c8d6d4ce569ba49b4c8cb07441e5aa65",
       "key_auths": [["DEIP6gBwv3yQeUfnXxUdxxeynNvpbXU8iNSS46GP9mhFRfDvnp9PJT", 1]],
-      "creator": "alice",
-      "description": "94c70f3ca2398ac96f730c505ca6f8737c264f86c9a3e25c27ede7b127d2d702",
+      "creator": "egonzalez",
+      "description": "1f5f0e24d44ef9b74c102f9b86bc284522751956f538d37001aca33b5e5dd7f4",
       "members": [
-        "alice",
-        "bob"
+        "egonzalez"
       ]
     },
     {
-      "account": "4444444444444444444444444444444444444444",
-      "account_auths": [["3333333333333333333333333333333333333333", 1]],
-      "creator": "alice",
-      "description": "2aab2f2b4613ab12f4e5292d762534145fc6081030a5d958866909965f1d03ce"
+      "account": "712bb20463fc64978f201cad1b6649465c80b02b",
+      "account_auths": [["fc712435c8d6d4ce569ba49b4c8cb07441e5aa65", 1]],
+      "creator": "fc712435c8d6d4ce569ba49b4c8cb07441e5aa65",
+      "description": "d2ad3337c99a18b1942706333601b36b0d6dda40db65bd2fab21cdf0e1a90d4e",
+      "members": [
+        "kat-austen"
+      ]
     }
   ],
   "researches": [],

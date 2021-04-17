@@ -773,7 +773,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
         {
             const auto& member = account_service.get_account(member_name);
             const share_type rgt = share_type(DEIP_100_PERCENT / research_group.members.size());
-            research_groups_service.add_member_to_research_group(member.name, rg.id, rgt, creator.name);
+            research_groups_service.add_member_to_research_group(member.name, rg.id, rgt, account_name_type());
         }
     }
 }
