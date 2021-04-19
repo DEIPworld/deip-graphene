@@ -20,6 +20,11 @@
       "name": "kat-austen",
       "recovery_account": "",
       "public_key": "DEIP61yvfw8M3D1wgUxiVP3TvNqQF2w8GkPRmbpgziKkod5CTAwAEi"
+    },
+    {
+      "name": "deip-action-project",
+      "recovery_account": "",
+      "public_key": "DEIP6M2Q2CZVK6senUtvhB3W5fgQPNrpZSP5dCakAJpY18jEtfCAWd"
     }
   ],
   "assets": [
@@ -61,6 +66,7 @@
       "creator": "egonzalez",
       "description": "1f5f0e24d44ef9b74c102f9b86bc284522751956f538d37001aca33b5e5dd7f4",
       "members": [
+        "deip-action-project",
         "egonzalez",
         "kat-austen"
       ]
