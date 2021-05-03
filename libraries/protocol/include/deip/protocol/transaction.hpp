@@ -102,8 +102,8 @@ void verify_authority(const vector<operation>& ops,
                       const authority_getter& get_active,
                       const authority_getter& get_owner,
                       const override_authority_getter& get_active_overrides,
-                      const flat_set<account_name_type>& active_aprovals = flat_set<account_name_type>(),
-                      const flat_set<account_name_type>& owner_approvals = flat_set<account_name_type>());
+                      const flat_set<account_name_type>& available_active_approvals = flat_set<account_name_type>(),
+                      const flat_set<account_name_type>& available_owner_approvals = flat_set<account_name_type>());
 
 struct annotated_signed_transaction : public signed_transaction
 {

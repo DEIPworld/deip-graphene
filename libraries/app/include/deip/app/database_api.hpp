@@ -207,14 +207,24 @@ public:
     std::string get_transaction_hex(const signed_transaction& trx) const;
 
     /**
-     * @return true of the @ref trx has all of the required signatures, otherwise throws an exception
+     * @return true if the @ref trx has all of the required signatures
      */
-    bool verify_authority(const signed_transaction& trx) const;
+    bool verify_signed_transaction_authority(const signed_transaction& trx) const;
+
+    /**
+     * @return true if the @ref trx has all of the required approvals for operations
+     */
+    bool verify_unsigned_transaction_authority(const transaction& trx, const flat_set<account_name_type>& active_approvals_checklist, const flat_set<account_name_type>& owner_approvals_checklist) const;
 
     /*
      * @return true if the signers have enough authority to authorize an account
      */
     bool verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const;
+
+    /*
+     * @return true if proposal is authorized with provided lists of approvals 
+     */
+    bool verify_proposal_authority(const external_id_type& external_id, const flat_set<account_name_type>& active_approvals_checklist, const flat_set<account_name_type>& owner_approvals_checklist) const;
 
     /**
      *  if permlink is "" then it will return all votes for author
@@ -532,8 +542,10 @@ FC_API(deip::app::database_api,
 
    // Authority / validation
    (get_transaction_hex)
-   (verify_authority)
+   (verify_signed_transaction_authority)
+   (verify_unsigned_transaction_authority)
    (verify_account_authority)
+   (verify_proposal_authority)
 
    // Witnesses
    (get_witnesses)

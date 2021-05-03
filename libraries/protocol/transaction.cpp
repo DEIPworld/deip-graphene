@@ -92,8 +92,8 @@ void verify_authority(const vector<operation>& tx_ops,
                       const authority_getter& get_active,
                       const authority_getter& get_owner,
                       const override_authority_getter& get_active_overrides,
-                      const flat_set<account_name_type>& active_approvals,
-                      const flat_set<account_name_type>& owner_approvals)
+                      const flat_set<account_name_type>& available_active_approvals,
+                      const flat_set<account_name_type>& available_owner_approvals)
 {
     try
     {
@@ -175,14 +175,15 @@ void verify_authority(const vector<operation>& tx_ops,
         flat_set<public_key_type> avail;
         sign_state s(sigs, get_active, get_owner, avail);
 
-        for (auto& id : active_approvals)
+        for (auto& id : available_active_approvals)
             s.approved_by.insert(id);
-        for (auto& id : owner_approvals)
+        for (auto& id : available_owner_approvals)
             s.approved_by.insert(id);
 
         for (const auto& auth : other)
         {
             DEIP_ASSERT(
+              // TODO: implement inclusive authority checker to check available_key_approvals
               s.check_authority(auth), 
               tx_missing_other_auth, 
               "Missing Authority", 
@@ -194,6 +195,8 @@ void verify_authority(const vector<operation>& tx_ops,
         for (const auto& pair : active_overrides)
         {
             DEIP_ASSERT(
+              // TODO: implement inclusive authority checker to check available_key_approvals
+              available_owner_approvals.find(pair.first) != available_owner_approvals.end() ||
               s.check_authority(pair.second) ||
               s.check_authority(get_owner(pair.first)), 
               tx_missing_other_auth, 
@@ -232,8 +235,8 @@ void verify_authority(const vector<operation>& tx_ops,
         for (auto id : required_active)
         {
             DEIP_ASSERT(
-              active_approvals.find(id) != active_approvals.end() ||
-              owner_approvals.find(id) != owner_approvals.end() ||
+              available_active_approvals.find(id) != available_active_approvals.end() ||
+              available_owner_approvals.find(id) != available_owner_approvals.end() ||
               s.check_authority(id) || 
               s.check_authority(get_owner(id)), 
               tx_missing_active_auth,
@@ -248,7 +251,7 @@ void verify_authority(const vector<operation>& tx_ops,
         for (auto id : required_owner)
         {
             DEIP_ASSERT(
-              owner_approvals.find(id) != owner_approvals.end() ||
+              available_owner_approvals.find(id) != available_owner_approvals.end() ||
               s.check_authority(get_owner(id)),
               tx_missing_owner_auth, 
               "Missing Owner Authority ${id}", 

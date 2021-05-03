@@ -666,7 +666,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
         operation_get_required_authorities(wrap.op, required_active, required_owner, other);
     }
 
-    FC_ASSERT(other.size() == 0); // TODO: what about other??? 
+    FC_ASSERT(other.size() == 0, "Not implemented for standalone auth"); // TODO: what about other??? 
 
     const uint16_t ref_block_num = _db.current_proposed_trx().valid() 
       ? _db.current_proposed_trx()->ref_block_num
@@ -734,11 +734,15 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
         FC_ASSERT(proposal.available_owner_approvals.find(account) == proposal.available_owner_approvals.end(), 
         "", ("account", account)("available", proposal.available_owner_approvals));
     }
-
     for (const account_name_type& account : op.active_approvals_to_add)
     {
         FC_ASSERT(proposal.available_active_approvals.find(account) == proposal.available_active_approvals.end(), 
         "", ("account", account)("available", proposal.available_active_approvals));
+    }
+    for (const public_key_type& key : op.key_approvals_to_add)
+    {
+        FC_ASSERT(proposal.available_key_approvals.find(key) == proposal.available_key_approvals.end(), 
+        "", ("key", key)("available", proposal.available_key_approvals));
     }
 
     for (const account_name_type& account : op.owner_approvals_to_remove)
@@ -751,6 +755,12 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
         FC_ASSERT(proposal.available_active_approvals.find(account) != proposal.available_active_approvals.end(),
           "", ("account", account)("available", proposal.available_active_approvals));
     }
+    for (const public_key_type& key : op.key_approvals_to_remove)
+    {
+        FC_ASSERT(proposal.available_key_approvals.find(key) != proposal.available_key_approvals.end(), 
+        "", ("account", key)("available", proposal.available_key_approvals));
+    }
+
 
     proposals_service.update_proposal(proposal, 
       op.owner_approvals_to_add,
