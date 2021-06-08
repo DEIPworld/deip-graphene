@@ -58,9 +58,11 @@ public:
     flat_set<account_name_type> members;
 
     bool is_private;
+    bool is_default;
 };
 
 struct is_finished;
+struct is_default;
 struct by_research_group_id;
 struct by_research_group;
 struct by_external_id;
@@ -92,6 +94,15 @@ typedef multi_index_container<research_object,
           research_object,
           bool,
           &research_object::is_finished
+        >
+    >,
+
+    ordered_non_unique<
+      tag<is_default>,
+        member<
+          research_object,
+          bool,
+          &research_object::is_default
         >
     >,
 
@@ -138,6 +149,7 @@ FC_REFLECT(deip::chain::research_object,
   (number_of_research_contents)
   (members)
   (is_private)
+  (is_default)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

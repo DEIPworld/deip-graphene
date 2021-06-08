@@ -457,6 +457,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 
         const time_point_sec genesis_time = get_genesis_time();
         const bool& is_private = false;
+        const bool& is_default = false;
         
         const optional<percent>& review_share = optional<percent>(percent(0));
         const optional<percent>& compensation_share = optional<percent>(percent(0));
@@ -481,7 +482,8 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           is_private,
           research.is_finished,
           members,
-          genesis_time
+          genesis_time,
+          is_default
         );
 
         // const share_type SECURITY_TOKEN_MAX_SUPPLY = 10000;

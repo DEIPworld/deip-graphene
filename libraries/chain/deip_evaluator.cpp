@@ -2251,8 +2251,9 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
         FC_ASSERT(!op.compensation_share.valid(), "Exclusion compensation is not allowed for personal research");
     }
 
-    const auto block_time = _db.head_block_time();
-    const bool is_finished = false;
+    const auto& block_time = _db.head_block_time();
+    const bool& is_finished = false;
+    const bool& is_default = false;
 
     flat_set<account_name_type> members;
     if (op.members.valid())
@@ -2286,7 +2287,8 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
       op.is_private,
       is_finished,
       members,
-      block_time
+      block_time,
+      is_default
     );
 }
 
