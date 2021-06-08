@@ -32,7 +32,8 @@ public:
                                            const bool& is_private,
                                            const bool& is_finished,
                                            const flat_set<account_name_type>& members,
-                                           const time_point_sec& created_at);
+                                           const time_point_sec& created_at,
+                                           const bool& is_default);
 
     const research_object& update_research(const research_object& research,
                                            const string& description,

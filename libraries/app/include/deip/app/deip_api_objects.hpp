@@ -430,6 +430,7 @@ struct research_api_obj
         , description(fc::to_string(r_o.description))
         , is_finished(r_o.is_finished)
         , is_private(r_o.is_private)
+        , is_default(r_o.is_default)
         , created_at(r_o.created_at)
         , disciplines(disciplines.begin(), disciplines.end())
         , number_of_positive_reviews(r_o.number_of_positive_reviews)
@@ -471,6 +472,7 @@ struct research_api_obj
     std::string description;
     bool is_finished;
     bool is_private;
+    bool is_default;
     time_point_sec created_at;
     optional<share_type> review_share;
     optional<share_type> compensation_share;
@@ -1459,6 +1461,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (description)
             (is_finished)
             (is_private)
+            (is_default)
             (created_at)
             (review_share)
             (compensation_share)

@@ -1,4 +1,5 @@
 #include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -86,6 +87,9 @@ const research_group_object& dbs_research_group::create_research_group(
   const account_name_type& creator,
   const string& description)
 {
+    dbs_research& research_service = db_impl().obtain_service<dbs_research>();
+    const auto& block_time = db_impl().head_block_time();
+
     const research_group_object& research_group
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
               rg_o.account = account;
@@ -96,6 +100,31 @@ const research_group_object& dbs_research_group::create_research_group(
               rg_o.is_dao = true;
               rg_o.default_quorum = DEIP_100_PERCENT;
           });
+
+    const string default_research_external_id(account);
+    const string default_research_description(account);
+    const std::set<discipline_id_type>& default_research_disciplines = std::set<discipline_id_type>({});
+    const optional<percent> default_research_review_share;
+    const optional<percent> default_research_compensation_share;
+    const bool& default_research_is_private = false;
+    const bool& default_research_is_finished = false;
+    const bool& default_research_is_default = true;
+    flat_set<account_name_type> default_research_members;
+    default_research_members.insert(account);
+
+    const auto& default_research = research_service.create_research(
+      research_group,
+      external_id_type((string)fc::ripemd160::hash(default_research_external_id)),
+      default_research_description,
+      default_research_disciplines,
+      default_research_review_share,
+      default_research_compensation_share,
+      default_research_is_private,
+      default_research_is_finished,
+      default_research_members,
+      block_time,
+      default_research_is_default
+    );
 
     return research_group;
 }
