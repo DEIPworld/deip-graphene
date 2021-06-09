@@ -9,7 +9,7 @@ namespace protocol {
 
 void create_research_operation::validate() const
 {
-    validate_account_name(research_group);
+    validate_account_name(account);
     validate_160_bits_hexadecimal_string(external_id);
 
     FC_ASSERT(disciplines.size() != 0, "Research must be related to one or several disciplines.");
@@ -20,26 +20,9 @@ void create_research_operation::validate() const
 
     FC_ASSERT(!description.empty(), "Research description cannot be empty.");
     FC_ASSERT(description.size() <= DEIP_MAX_MEMO_SIZE);
-
-    if (review_share.valid())
-    {
-        const auto& share = *review_share;
-        const auto& min_review_share = percent(0);
-        const auto& max_review_share = percent(DEIP_1_PERCENT * 50);
-        FC_ASSERT(share >= min_review_share && share <= max_review_share,
-          "Percent for review should be in ${1} to ${2} range. Provided value: ${3}",
-          ("1", min_review_share)("2", max_review_share)("3", share));
-    }
-
-    if (compensation_share.valid())
-    {
-        const auto& share = *compensation_share;
-        const auto& min_compensation_share = percent(0);
-        const auto& max_compensation_share = percent(DEIP_1_PERCENT * 50);
-        FC_ASSERT(share >= min_compensation_share && share <= max_compensation_share,
-          "Percent for dropout compensation should be in ${1} to ${2} range. Provided value: ${3}.",
-          ("1", min_compensation_share)("2", max_compensation_share)("3", share));
-    }
+    
+    FC_ASSERT(!review_share.valid(), "'review_share' field is deprecated, use join_project_contract op");
+    FC_ASSERT(!compensation_share.valid(), "'compensation_share' field is deprecated, use join_project_contract op");
 
     if (members.valid())
     {

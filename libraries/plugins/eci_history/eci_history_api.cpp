@@ -57,7 +57,7 @@ public:
         const research_content_object& research_content = *research_content_opt;
 
         const auto& research = research_service.get_research(research_content.research_id);
-        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        const auto& research_group = research_groups_service.get_research_group(research.research_group);
 
         const auto& research_group_api = app::research_group_api_obj(research_group);
         const auto& research_api = app::research_api_obj(research, {}, research_group_api);
@@ -229,7 +229,7 @@ public:
 
         const research_object& research = *research_opt;
 
-        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        const auto& research_group = research_groups_service.get_research_group(research.research_group);
         const auto& research_group_api = app::research_group_api_obj(research_group);
         const auto& research_api = app::research_api_obj(research, {}, research_group);
 
@@ -944,7 +944,7 @@ private:
                 research_content_api_opt = app::research_content_api_obj(research_content);
 
                 const auto& research = research_service.get_research(research_content.research_id);
-                const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+                const auto& research_group = research_groups_service.get_research_group(research.research_group);
 
                 research_api_opt = app::research_api_obj(research, {}, research_group);
                 research_group_api_opt = app::research_group_api_obj(research_group);
@@ -961,7 +961,7 @@ private:
                 research_content_api_opt = app::research_content_api_obj(research_content);
                 
                 const auto& research = research_service.get_research(research_content.research_id);
-                const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+                const auto& research_group = research_groups_service.get_research_group(research.research_group);
 
                 research_api_opt = app::research_api_obj(research, {}, research_group);
                 research_group_api_opt = app::research_group_api_obj(research_group);
@@ -981,7 +981,7 @@ private:
                 research_content_api_opt = app::research_content_api_obj(research_content);
 
                 const auto& research = research_service.get_research(research_content.research_id);
-                const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+                const auto& research_group = research_groups_service.get_research_group(research.research_group);
 
                 research_api_opt = app::research_api_obj(research, {}, research_group);
                 research_group_api_opt = app::research_group_api_obj(research_group);

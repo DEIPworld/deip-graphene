@@ -333,7 +333,7 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
 
     const auto& research_token_sale = get_research_token_sale_by_id(research_token_sale_id);
     const auto& research = research_service.get_research(research_token_sale.research_id);
-    const auto& research_group = research_group_service.get_research_group(research.research_group_id);
+    const auto& research_group = research_group_service.get_research_group(research.research_group);
 
     for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
     {

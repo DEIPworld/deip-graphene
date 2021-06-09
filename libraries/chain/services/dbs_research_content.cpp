@@ -49,10 +49,6 @@ const research_content_object& dbs_research_content::create_research_content(
     db_impl().modify(research, [&](research_object& r_o) { 
       r_o.last_update_time = timestamp;
       r_o.number_of_research_contents += 1;
-      if (type == research_content_type::final_result)
-      {
-          r_o.is_finished = true;
-      }
     });
 
     dgp_service.create_recent_entity(external_id);

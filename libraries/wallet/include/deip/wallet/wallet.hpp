@@ -860,29 +860,9 @@ public:
     vector<research_content_api_obj> get_research_contents_by_type(const int64_t research_id, const uint16_t type);
 
     /**
-     *  Gets the research by id
-     */
-    fc::optional<research_api_obj> get_research(const int64_t research_id);
-
-    /**
      *  Gets the list of researches by id research group
      */
     vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
-
-    /**
-     * Gets list of my research groups
-     */
-    vector<research_group_api_obj> list_my_research_groups();
-
-    /**
-     * Gets list of my researches
-     */
-    vector<research_api_obj> list_my_researches();
-
-    /**
-     * Gets list of all disciplines
-     */
-    vector<discipline_api_obj> list_all_disciplines();
 
     /**
      *  This method will create new discipline_supply linked to owner account.
@@ -1064,7 +1044,7 @@ FC_REFLECT( deip::wallet::plain_keys, (checksum)(keys) )
 
 FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active) )
 
-              FC_API( deip::wallet::wallet_api,
+FC_API( deip::wallet::wallet_api,
         /// wallet api
         (help)(gethelp)
         (about)(is_new)(is_locked)(lock)(unlock)(set_password)
@@ -1107,11 +1087,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active) )
         (list_research_token_sales)
         (get_research_content)
         (get_research_contents_by_type)
-        (get_research)
         (get_researches_by_research_group)
-        (list_my_research_groups)
-        (list_my_researches)
-        (list_all_disciplines)
 
         /// transaction api
         (create_account)

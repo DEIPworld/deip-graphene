@@ -47,3 +47,5 @@ void update_account_operation::validate() const
 
 } // namespace protocol
 } // namespace deip
+
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::update_account_extension)

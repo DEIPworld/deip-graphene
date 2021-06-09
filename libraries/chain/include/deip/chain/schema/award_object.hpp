@@ -36,7 +36,7 @@ public:
     external_id_type award_number;
     account_name_type awardee;
 
-    research_group_id_type university_id;
+    account_id_type university_id;
     external_id_type university_external_id;
     percent university_overhead;
 

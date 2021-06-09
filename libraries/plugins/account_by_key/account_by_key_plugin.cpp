@@ -32,8 +32,10 @@ public:
     void clear_cache();
     void cache_auths(const account_authority_object& a);
     void update_key_lookup(const account_authority_object& a);
+    void update_team_lookup(const account_authority_object& a);
 
     flat_set<public_key_type> cached_keys;
+    flat_set<account_name_type> cached_teams;
     account_by_key_plugin& _self;
 };
 
@@ -52,6 +54,11 @@ struct pre_operation_visitor
     {
     }
 
+    void operator()(const create_genesis_account_operation& op) const
+    {
+        _plugin.my->clear_cache();
+    }
+
     void operator()(const create_account_operation& op) const
     {
         _plugin.my->clear_cache();
@@ -61,6 +68,22 @@ struct pre_operation_visitor
     {
         _plugin.my->clear_cache();
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
+        if (acct_itr)
+            _plugin.my->cache_auths(*acct_itr);
+    }
+
+    void operator()(const join_research_contract_operation& op) const
+    {
+        _plugin.my->clear_cache();
+        auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.research_group);
+        if (acct_itr)
+            _plugin.my->cache_auths(*acct_itr);
+    }
+
+    void operator()(const leave_research_contract_operation& op) const
+    {
+        _plugin.my->clear_cache();
+        auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.research_group);
         if (acct_itr)
             _plugin.my->cache_auths(*acct_itr);
     }
@@ -99,25 +122,58 @@ struct post_operation_visitor
     {
     }
 
+    void operator()(const create_genesis_account_operation& op) const
+    {
+        auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
+        if (acct_itr) {
+            _plugin.my->update_key_lookup(*acct_itr);
+            _plugin.my->update_team_lookup(*acct_itr);
+        }
+    }
+
     void operator()(const create_account_operation& op) const
     {
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.new_account_name);
-        if (acct_itr)
+        if (acct_itr) {
             _plugin.my->update_key_lookup(*acct_itr);
+            _plugin.my->update_team_lookup(*acct_itr);
+        }
     }
 
     void operator()(const update_account_operation& op) const
     {
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
-        if (acct_itr)
+        if (acct_itr) {
             _plugin.my->update_key_lookup(*acct_itr);
+            _plugin.my->update_team_lookup(*acct_itr);
+        }
+    }
+
+    void operator()(const join_research_contract_operation& op) const
+    {
+        auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.research_group);
+        if (acct_itr) {
+            _plugin.my->update_key_lookup(*acct_itr);
+            _plugin.my->update_team_lookup(*acct_itr);
+        }
+    }
+
+    void operator()(const leave_research_contract_operation& op) const
+    {
+        auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.research_group);
+        if (acct_itr) {
+            _plugin.my->update_key_lookup(*acct_itr);
+            _plugin.my->update_team_lookup(*acct_itr);
+        }
     }
 
     void operator()(const recover_account_operation& op) const
     {
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account_to_recover);
-        if (acct_itr)
+        if (acct_itr) {
             _plugin.my->update_key_lookup(*acct_itr);
+            _plugin.my->update_team_lookup(*acct_itr);
+        }
     }
 
     void operator()(const hardfork_operation& op) const
@@ -129,6 +185,7 @@ struct post_operation_visitor
 void account_by_key_plugin_impl::clear_cache()
 {
     cached_keys.clear();
+    cached_teams.clear();
 }
 
 void account_by_key_plugin_impl::cache_auths(const account_authority_object& a)
@@ -137,6 +194,11 @@ void account_by_key_plugin_impl::cache_auths(const account_authority_object& a)
         cached_keys.insert(item.first);
     for (const auto& item : a.active.key_auths)
         cached_keys.insert(item.first);
+
+    for (const auto& item : a.owner.account_auths)
+        cached_teams.insert(item.first);
+    for (const auto& item : a.active.account_auths)
+        cached_teams.insert(item.first);
 }
 
 void account_by_key_plugin_impl::update_key_lookup(const account_authority_object& a)
@@ -192,6 +254,57 @@ void account_by_key_plugin_impl::update_key_lookup(const account_authority_objec
     cached_keys.clear();
 }
 
+void account_by_key_plugin_impl::update_team_lookup(const account_authority_object& a)
+{
+    auto& db = database();
+    const auto& now = db.head_block_time();
+
+    const auto& team_lookup_idx = db.get_index<team_lookup_index>().indices().get<by_team_deactivation_time>();
+
+    flat_set<account_name_type> new_teams;
+
+    // Construct the set of keys in the account's authority
+    for (const auto& item : a.owner.account_auths)
+        new_teams.insert(item.first);
+    for (const auto& item : a.active.account_auths)
+        new_teams.insert(item.first);
+
+    // For each key that needs a lookup
+    for (const auto& team : new_teams)
+    {
+        // If the key was not in the authority, add it to the lookup
+        if (cached_teams.find(team) == cached_teams.end())
+        {
+            const auto& lookup_itr = team_lookup_idx.find(std::make_tuple(team, a.account, fc::time_point_sec::maximum()));
+            if (lookup_itr == team_lookup_idx.end())
+            {
+                db.create<team_lookup_object>([&](team_lookup_object& o) {
+                    o.team = team;
+                    o.account = a.account;
+                    o.deactivation_time = fc::time_point_sec::maximum();
+                });
+            }
+        }
+        else
+        {
+            // If the key was already in the auths, remove it from the set so we don't deactivate it
+            cached_teams.erase(team);
+        }
+    }
+
+    // Loop over the keys that were in authority but are no longer and remove them from the lookup
+    for (const auto& team : cached_teams)
+    {
+        const auto& lookup_itr = team_lookup_idx.find(std::make_tuple(team, a.account, fc::time_point_sec::maximum()));
+        if (lookup_itr != team_lookup_idx.end())
+        {
+            db.modify(*lookup_itr, [&](team_lookup_object& o) { o.deactivation_time = now; });
+        }
+    }
+
+    cached_teams.clear();
+}
+
 void account_by_key_plugin_impl::pre_operation(const operation_notification& note)
 {
     note.op.visit(pre_operation_visitor(_self));
@@ -226,6 +339,7 @@ void account_by_key_plugin::plugin_initialize(const boost::program_options::vari
         db.post_apply_operation.connect([&](const operation_notification& o) { my->post_operation(o); });
 
         db.add_plugin_index<key_lookup_index>();
+        db.add_plugin_index<team_lookup_index>();
     }
     FC_CAPTURE_AND_RETHROW()
 }

@@ -62,7 +62,7 @@ struct post_operation_visitor
     }
 
 
-    void operator()(const proposal_initialized_operation& op) const
+    void operator()(const create_genesis_proposal_operation& op) const
     {
         std::stringstream ss;
         transaction proposed_transaction;
