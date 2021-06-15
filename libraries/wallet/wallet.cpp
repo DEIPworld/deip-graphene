@@ -2165,53 +2165,11 @@ vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const
     return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
 }
 
-fc::optional<research_api_obj> wallet_api::get_research(const int64_t research_id)
-{
-    return my->_remote_db->get_research_by_id(research_id);
-}
-
 vector<research_api_obj> wallet_api::get_researches_by_research_group(const external_id_type& external_id) const
 {
     return my->_remote_db->get_researches_by_research_group(external_id);
 }
 
-vector<research_group_api_obj> wallet_api::list_my_research_groups()
-{
-    vector<account_api_obj> accounts = list_my_accounts();
-
-    vector<research_group_api_obj> research_groups;
-
-    for (const auto& account : accounts)
-    {
-        vector<research_group_token_api_obj> token_objects = my->_remote_db->get_research_group_tokens_by_account(account.name);
-        for (const auto& token_object : token_objects)
-            research_groups.push_back(*my->_remote_db->get_research_group_by_id(token_object.research_group_id));
-    }
-
-    return research_groups;
-}
-
-vector<research_api_obj> wallet_api::list_my_researches()
-{
-    vector<research_api_obj> researches;
-    vector<research_group_api_obj> research_groups = list_my_research_groups();
-    for (const auto& research_group : research_groups)
-    {
-        vector<research_api_obj> r = my->_remote_db->get_researches_by_research_group(research_group.external_id);
-        researches.insert(researches.end(), r.begin(), r.end());
-    }
-
-    return researches;
-}
-
-vector<discipline_api_obj> wallet_api::list_all_disciplines()
-{
-    vector<discipline_api_obj> result;
-
-    result = my->_remote_db->lookup_disciplines(discipline_id_type(1), 10000);
-
-    return result;
-}
 
 annotated_signed_transaction wallet_api::create_discipline_supply(const std::string& grantor,
                                                                   const asset& amount,

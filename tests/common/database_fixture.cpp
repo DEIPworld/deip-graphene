@@ -425,16 +425,7 @@ database_fixture::research_group_create(const int64_t& id,
     return new_research_group;
 }
 
-const research_group_token_object& database_fixture::research_group_token_create(
-    const research_group_id_type& research_group_id, const account_name_type& account, const share_type tokens_amount)
-{
-    auto& research_group_service = db.obtain_service<dbs_research_group>();
-    const research_group_token_object& new_research_group_token = research_group_service.add_member_to_research_group(account, research_group_id, tokens_amount, account_name_type());
-    return new_research_group_token;
-}
-
-const research_group_object&
-database_fixture::setup_research_group(const int64_t& id,
+const research_group_object& database_fixture::setup_research_group(const int64_t& id,
                                        const string& name,
                                        const string& description,
                                        const share_type funds,
@@ -443,12 +434,6 @@ database_fixture::setup_research_group(const int64_t& id,
                                        const vector<std::pair<account_name_type, share_type>>& accounts)
 {
     const auto& research_group = research_group_create(id, name, description, funds, is_dao, is_personal);
-
-    for (const auto& account : accounts)
-    {
-        research_group_token_create(research_group.id, account.first, account.second);
-    }
-
     return research_group;
 }
 

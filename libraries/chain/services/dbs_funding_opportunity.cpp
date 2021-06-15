@@ -351,7 +351,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
         {
             asset research_reward = util::calculate_share(funding_opportunity.amount, research_eci.first, total_eci);
             auto& research = db_impl().get<research_object>(research_eci.second);
-            auto& research_group = research_group_service.get_research_group(research.research_group_id);
+            auto& research_group = research_group_service.get_research_group(research.research_group);
 
             string award_number(funding_opportunity.funding_opportunity_number);
             award_number.append(research.external_id);
@@ -361,7 +361,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
                                                      external_id_type((string)fc::ripemd160::hash(award_number)),
                                                      research_group.account,
                                                      research_reward,
-                                                     research.research_group_id,
+                                                     research_group_id_type(research.research_group_id._id),
                                                      research.research_group,
                                                      percent(0),
                                                      account_name_type(),
@@ -385,7 +385,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
             if (research_eci.first > max_eci) {
                 max_award_id = award.id;
                 max_award_recipient_id = award_recipient.id;
-                research_group_with_max_award_id = research.research_group_id;
+                research_group_with_max_award_id = research_group_id_type(research.research_group_id._id);
                 max_eci = research_eci.first;
             }
 

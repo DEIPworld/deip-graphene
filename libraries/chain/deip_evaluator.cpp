@@ -227,7 +227,6 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
 
 void update_account_evaluator::do_apply(const update_account_operation& op)
 {
-
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     const auto& account = account_service.get_account(op.account);
@@ -265,7 +264,9 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
       account, 
       memo_key,
       json_metadata, 
-      op.traits);
+      op.traits,
+      op.update_extensions
+    );
 }
 
 /**
@@ -839,7 +840,6 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
 
     const auto& research_content = (*research_content_opt).get();
     const auto& research = research_service.get_research(research_content.research_id);
-    const auto& reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
     const auto& existing_reviews = review_service.get_reviews_by_research_content(research_content.id);
     const auto& now = _db.head_block_time();
 
@@ -847,11 +847,6 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
       [&](const review_object& rw) { return rw.author == op.author && rw.research_content_id == research_content.id; }),
       "${1} has reviewed research content ${2} already", 
       ("1", op.author)("2", research_content.id));
-
-    FC_ASSERT(std::none_of(reseach_group_tokens.begin(), reseach_group_tokens.end(),
-      [&](const research_group_token_object& rgt) { return rgt.owner == op.author; }),
-      "${1} is member of research group ${2} and can not review its research content", 
-      ("1", op.author)("2", research.research_group_id));
 
     const auto& expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     const auto& research_disciplines_relations = research_discipline_service.get_research_discipline_relations_by_research(research_content.research_id);
@@ -1242,13 +1237,6 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
         const auto& organization = research_group_service.get_research_group_by_account(contract.organization_id);
         const auto& review_committee = research_group_service.get_research_group_by_account(contract.review_committee_id);
         const auto& treasury = research_group_service.get_research_group_by_account(contract.treasury_id);
-        
-        for (auto& officer : contract.officers)
-        {
-            FC_ASSERT(research_group_service.is_research_group_member(officer, organization.id),
-              "Account ${1} is not a member of ${2} organization and can not be programm officer",
-              ("1", officer)("2", contract.organization_id));
-        }
 
         FC_ASSERT(contract.open_date >= _db.head_block_time(), "Open date must be greater than now");
         FC_ASSERT(contract.open_date < contract.close_date, "Open date must be earlier than close date");
@@ -1320,10 +1308,6 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
     
     const auto& research = research_service.get_research(op.research_id);
 
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, research.research_group_id), 
-              "${1} is not a member of ${2} research group",
-              ("${1}", op.creator)("2", research.research_group_id));
-
     const auto& grant = funding_opportunity_service.get_funding_opportunity(op.funding_opportunity_number);
 
     FC_ASSERT(grant.distribution_type == static_cast<uint16_t>(funding_opportunity_distribution_type::eci_evaluation),
@@ -1362,10 +1346,6 @@ void create_review_for_application_evaluator::do_apply(const create_review_for_a
 
     const auto& application = grant_application_service.get_grant_application(op.grant_application_id);
     const auto& research = research_service.get_research(application.research_id);
-    const auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-
-    for (auto& reseach_group_token : reseach_group_tokens)
-        FC_ASSERT(reseach_group_token.get().owner != op.author, "You cannot review your own content");
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     const auto& research_disciplines_relations = research_discipline_service.get_research_discipline_relations_by_research(application.research_id);
@@ -1409,13 +1389,6 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
               ("1", grant_application.id)("2", grant_application.status));
 
     const auto& grant = funding_opportunity_service.get_funding_opportunity(grant_application.funding_opportunity_number);
-
-    const auto officers = research_group_service.get_research_group_members(grant.review_committee_id);
-    bool op_is_allowed = grant.grantor == op.approver
-        || std::any_of(officers.begin(), officers.end(),
-                       [&](const account_name_type& officer) { return officer == op.approver; });
-
-    FC_ASSERT(op_is_allowed, "This account cannot approve grant applications");
     grant_application_service.update_grant_application_status(grant_application, grant_application_status::approved);
 }
 
@@ -1434,13 +1407,6 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
               "Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
 
     const auto& grant = funding_opportunity_service.get_funding_opportunity(grant_application.funding_opportunity_number);
-
-    const auto officers = research_group_service.get_research_group_members(grant.review_committee_id);
-    bool op_is_allowed = grant.grantor == op.rejector
-        || std::any_of(officers.begin(), officers.end(),
-                       [&](const account_name_type& officer) { return officer == op.rejector; });
-
-    FC_ASSERT(op_is_allowed, "This account cannot reject grant applications");
     grant_application_service.update_grant_application_status(grant_application, grant_application_status::rejected);
 }
 
@@ -1564,10 +1530,6 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       ("1", foa.current_supply.amount)("2", op.award.amount));
 
     const auto& foa_organization = research_group_service.get_research_group(foa.organization_id);
-    
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, foa_organization.id),
-      "${1} is not a member of FOA organization ${2}", 
-      ("1", op.creator)("2", foa_organization.id));
 
     FC_ASSERT(op.university_external_id != foa_organization.account,
       "Funding opportunity agency ${1} is not allowed as intermediary",
@@ -1635,10 +1597,6 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
 
         const auto& research = research_service.get_research(subaward.research_external_id);
 
-        FC_ASSERT(research_group_service.is_research_group_member(subaward.subawardee, research.research_group_id),
-          "Awardee ${1} is not a member of research group {2}",
-          ("1", subaward.subawardee)("2", research.research_group_id));
-
         award_service.create_award_recipient(
           award.award_number,
           subaward.subaward_number,
@@ -1680,7 +1638,7 @@ void approve_award_evaluator::do_apply(const approve_award_operation& op)
       "Only pending award can be approved. The current status is: ${1}",
       ("1", award.status));
 
-    const auto& university = research_group_service.get_research_group(award.university_id);
+    const auto& university = research_group_service.get_research_group(research_group_id_type(award.university_id._id));
     const asset university_fee = asset(((award.amount.amount * share_type(award.university_overhead.amount)) / DEIP_100_PERCENT), award.amount.symbol);
     account_balance_service.adjust_account_balance(university.creator, university_fee);
 
@@ -1823,10 +1781,6 @@ void certify_award_withdrawal_request_evaluator::do_apply(const certify_award_wi
 
     const auto& award = award_service.get_award(award_number);
 
-    // FC_ASSERT(research_group_service.is_research_group_member(op.certifier, award.university_id),
-    //   "Certifier ${1} is not a member of university with ID:{2}",
-    //   ("1", op.certifier)("2", award.university_id));
-
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::certified);
 }
 
@@ -1904,16 +1858,11 @@ void reject_award_withdrawal_request_evaluator::do_apply(const reject_award_with
 
     if (withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::pending))
     {
-        // FC_ASSERT(research_group_service.is_research_group_member(op.rejector, award.university_id),
-        //   "Rejector ${1} is not a member of university with ID:{2}",
-        //   ("1", op.rejector)("2", award.university_id));
+
     }
     else if (withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::certified))
     {
-        // FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
-        //   [&](const account_name_type &officer) { return officer == op.rejector; }),
-        //   "Account ${1} is not Funding Opportunity officer",
-        //   ("1", op.rejector));
+
     }
     else 
     {
@@ -1957,10 +1906,6 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
 
     const auto& foa = funding_opportunity_service.get_funding_opportunity(award_recipient.funding_opportunity_number);
     const auto& treasury = research_group_service.get_research_group(foa.treasury_id);
-
-    // FC_ASSERT(research_group_service.is_research_group_member(op.payer, treasury.id),
-    //   "Account ${1} is not a member of the Treasury",
-    //   ("1", op.payer));
 
     FC_ASSERT(award_recipient.total_amount - award_recipient.total_expenses >= withdrawal.amount, 
       "Not enough funds to process the payment. Requested ${1}, Available: ${2} ", 
@@ -2077,156 +2022,33 @@ void fulfill_nda_content_access_request_evaluator::do_apply(const fulfill_nda_co
     nda_contract_requests_service.fulfill_content_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
 }
 
-void join_research_group_membership_evaluator::do_apply(const join_research_group_membership_operation& op)
+void join_research_contract_evaluator::do_apply(const join_research_contract_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
 
     FC_ASSERT(account_service.account_exists(op.member), "Account ${1} does not exist", ("1", op.member));
+    FC_ASSERT(account_service.account_exists(op.research_group), "Research group ${1} does not exist", ("1", op.research_group));
 
-    FC_ASSERT(account_service.account_exists(op.research_group),
-      "Research group ${1} does not exist",
-      ("1", op.research_group));
-
-    const auto& research_group_account = account_service.get_account(op.research_group);
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
-
-    FC_ASSERT(!research_group.is_personal, 
-      "Can not join to personal ${1} research group", 
-      ("1", research_group.account));
-
-    FC_ASSERT(!research_groups_service.is_research_group_member(op.member, research_group.id),
-      "Account ${1} is already a member of ${2} research group",
-      ("1", op.member)("2", research_group.account));
-
-    std::vector<std::reference_wrapper<const research_object>> researches;
-    if (op.researches.valid())
-    {
-        const auto& list = *op.researches;
-        for (auto& external_id : list)
-        {
-            const auto& research_opt = research_service.get_research_if_exists(external_id);
-            FC_ASSERT(research_opt.valid(), "Research ${1} does not exist", ("1", external_id));
-            const auto& research = (*research_opt).get();
-            FC_ASSERT(research.research_group_id == research_group.id,
-              "Research ${1} is not a research of ${2} research group",
-              ("1", external_id)("2", research_group.account));
-            researches.push_back(research);
-        }
-    }
-    else
-    {
-        const auto& all_researches = research_service.get_researches_by_research_group(research_group.id);
-        researches.insert(researches.end(), all_researches.begin(), all_researches.end());
-    }
-
-    for (const research_object& research : researches)
-    {
-        flat_set<account_name_type> updated_members;
-        updated_members.insert(research.members.begin(), research.members.end());
-        updated_members.insert(op.member);
-
-        research_service.update_research(research, 
-          fc::to_string(research.description), 
-          research.is_private,
-          research.review_share,
-          research.compensation_share,
-          updated_members);
-    }
-
-    const auto& members_rgt = research_groups_service.get_research_group_tokens(research_group.id);
-    const share_type rgt_share = share_type(DEIP_100_PERCENT / (members_rgt.size() + 1));
-
-    research_groups_service.add_member_to_research_group(
-      op.member,
-      research_group.id,
-      rgt_share,
-      account_name_type());
-
-    account_service.add_to_active_authority(research_group_account, op.member);
+    const auto& research_account = account_service.get_account(op.research_group);
+    // TODO: add check to verify existing membership
+    account_service.add_to_active_authority(research_account, op.member);
+    // TODO: set reward share and other conditions
 }
 
-void leave_research_group_membership_evaluator::do_apply(const leave_research_group_membership_operation& op)
+void leave_research_contract_evaluator::do_apply(const leave_research_contract_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
-    auto& research_token_service = _db.obtain_service<dbs_research_token>();
-    auto& research_content_service = _db.obtain_service<dbs_research_content>();
 
-    FC_ASSERT(account_service.account_exists(op.member), 
-      "Account ${1} does not exist", 
-      ("1", op.member));
+    FC_ASSERT(account_service.account_exists(op.member), "Account ${1} does not exist", ("1", op.member));
+    FC_ASSERT(account_service.account_exists(op.research_group), "Research group ${1} does not exist", ("1", op.research_group));
 
-    FC_ASSERT(account_service.account_exists(op.research_group), 
-      "Research group ${1} does not exist", 
-      ("1", op.research_group));
-
-    const auto& research_group_account = account_service.get_account(op.research_group);
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
-
-    FC_ASSERT(!research_group.is_personal, 
-      "Can not left personal ${1} research group", 
-      ("1", research_group.account));
-
-    FC_ASSERT(research_groups_service.is_research_group_member(op.member, research_group.id),
-      "Account ${1} is not a member of ${2} research group.",
-      ("1", op.member)("2", research_group.account));
-
-    const auto& researches = research_service.get_researches_by_research_group(research_group.id);
-
-    if (op.is_exclusion)
-    {
-        for (const research_object& research : researches)
-        {
-            if (research.compensation_share.valid())
-            {
-                const auto& compensation_share = *research.compensation_share;
-                const auto& research_contents = research_content_service.get_research_content_by_research_id(research.id);
-                const auto& authors = std::accumulate(
-                    research_contents.begin(), research_contents.end(), std::set<account_name_type>(),
-                    [&](std::set<account_name_type> acc, const research_content_object& research_content) {
-                      acc.insert(research_content.authors.begin(), research_content.authors.end());
-                      return acc; 
-                    });
-
-                if (authors.find(op.member) != authors.end())
-                {
-                    // const auto& security_tokens_balances = security_token_token_service.get_security_token_balances_by_owner_and_research(research.research_group, research.external_id);
-                    // for (const security_token_balance_object& security_tokens_balance : security_tokens_balances)
-                    // {
-                    //     const auto& compensation = util::calculate_share(share_type(security_tokens_balance.amount), compensation_share);
-                    //     security_token_token_service.transfer_security_token(research.research_group, op.member, security_tokens_balance.security_token_external_id, uint32_t(compensation.value));
-                    // }
-                }
-            }
-        }
-    }
-
-    for (const research_object& research : researches)
-    {
-        flat_set<account_name_type> updated_members;
-
-        for (auto& member : research.members)
-        {
-            if (member != op.member)
-                updated_members.insert(member);
-        }
-
-        research_service.update_research(research, 
-          fc::to_string(research.description), 
-          research.is_private,
-          research.review_share,
-          research.compensation_share,
-          updated_members);
-    }
-
-    research_groups_service.remove_member_from_research_group(
-      op.member, 
-      research_group.id);
-
-    account_service.remove_from_active_authority(research_group_account, op.member);
+    const auto& research_account = account_service.get_account(op.research_group);
+    account_service.remove_from_active_authority(research_account, op.member);
+    // TODO: cancel reward share and other conditions
 }
 
 void create_research_evaluator::do_apply(const create_research_operation& op)
@@ -2237,68 +2059,34 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     auto& discipline_service =_db.obtain_service<dbs_discipline>();
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
+    const auto& block_time = _db.head_block_time();
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
 
-    FC_ASSERT(account_service.account_exists(op.research_group),
-      "Account(creator) ${1} does not exist",
-      ("1", op.research_group));
-
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
+    const auto& account = account_service.get_account(op.account);
 
     std::set<discipline_id_type> disciplines;
-    for (auto& external_id : op.disciplines)
+    for (const auto& external_id : op.disciplines)
     {
         const auto& discipline_opt = discipline_service.get_discipline_if_exists(external_id);
         FC_ASSERT(discipline_opt.valid(), "Discipline ${1} does not exist", ("1", external_id));
-        const auto& discipline = (*discipline_opt).get();
+        const discipline_object& discipline = *discipline_opt;
         disciplines.insert(discipline_id_type(discipline.id));
     }
 
-    if (research_group.is_personal)
-    {
-        FC_ASSERT(!op.members.valid(), "Can not add members to personal research");
-        FC_ASSERT(!op.compensation_share.valid(), "Exclusion compensation is not allowed for personal research");
-    }
-
-    const auto& block_time = _db.head_block_time();
     const bool& is_finished = false;
     const bool& is_default = false;
-
-    flat_set<account_name_type> members;
-    if (op.members.valid())
-    {
-        const auto& list = *op.members;
-        for (auto& member : list)
-        {
-            FC_ASSERT(research_groups_service.is_research_group_member(member, research_group.id),
-              "Account ${1} is not a member of ${2} research group. Add the account to group membership at first",
-              ("1", member)("2", research_group.account));
-            members.insert(member);
-        }
-    }
-    else 
-    {
-        const auto& all_members = research_groups_service.get_research_group_tokens(research_group.id);
-        for (auto& wrap : all_members)
-        {
-            const auto& member = wrap.get();
-            members.insert(member.owner);
-        }
-    }
+    const bool& is_private = op.is_private;
 
     research_service.create_research(
-      research_group, 
+      account, 
       op.external_id, 
       op.description, 
       disciplines,
-      op.review_share, 
-      op.compensation_share, 
-      op.is_private,
+      is_private,
       is_finished,
-      members,
-      block_time,
-      is_default
+      is_default,
+      block_time
     );
 }
 
@@ -2328,7 +2116,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
 
     const auto& research = research_service.get_research(op.research_external_id);
 
-    FC_ASSERT(research.research_group_id == research_group.id,
+    FC_ASSERT(research.research_group == research_group.account,
       "Research ${1} does not belong to research group ${2}",
       ("1", research.external_id)("2", research_group.account));
 
@@ -2338,9 +2126,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
 
     for (auto& author : op.authors)
     {
-        FC_ASSERT(research.members.find(author) != research.members.end(),
-          "Account ${1} is not a member of ${2} research. Add the account to the research at first",
-          ("1", author)("2", research.external_id));
+        // TODO: check auths
     }
 
     const auto& research_content = research_content_service.create_research_content(
@@ -2468,7 +2254,7 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
         FC_ASSERT(security_token_balance.to_asset() >= security_token_on_sale, "Research group ${1} security token balance (${2}) is not enough", ("1", research.research_group)("2", security_token_balance.to_asset()));
     }
 
-    FC_ASSERT(research.research_group_id == research_group.id, "Research ${1} does not belong to research group ${2}",
+    FC_ASSERT(research.research_group == research_group.account, "Research ${1} does not belong to research group ${2}",
       ("1", op.research_external_id)("2", research_group.account));
 
     const auto& active_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::active);
@@ -2499,17 +2285,11 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
 
-    FC_ASSERT(account_service.account_exists(op.research_group),
+    FC_ASSERT(account_service.account_exists(op.account),
       "Account(creator) ${1} does not exist",
-      ("1", op.research_group));
+      ("1", op.account));
 
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
-
-    if (research_group.is_personal)
-    {
-        FC_ASSERT(!op.members.valid(), "Can not add members to personal research");
-        FC_ASSERT(!op.compensation_share.valid(), "Exclusion compensation is not allowed for personal research");
-    }
+    const auto& account = account_service.get_account(op.account);
 
     FC_ASSERT(research_service.research_exists(op.external_id),
       "Research with external id: ${1} does not exist",
@@ -2517,33 +2297,19 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
 
     const auto& research = research_service.get_research(op.external_id);
 
-    FC_ASSERT(research.research_group_id == research_group.id,
+    FC_ASSERT(research.research_group == account.name,
       "Research ${1} does not belong to research group ${2}",
-      ("1", research.external_id)("2", research_group.account));
-
-    if (op.members.valid())
-    {
-        const auto& members = *op.members;
-        for (auto& member : members)
-        {
-            FC_ASSERT(research_groups_service.is_research_group_member(member, research_group.id),
-              "Account ${1} is not a member of ${2} research group. Add the account to group membership at first",
-              ("1", member)("2", research_group.account));
-        }
-    }
+      ("1", research.external_id)("2", account.name));
 
     std::string description = op.description.valid() ? *op.description : fc::to_string(research.description);
     bool is_private = op.is_private.valid() ? *op.is_private : research.is_private;
-    optional<percent> review_share = op.review_share.valid() ? op.review_share : research.review_share;
-    optional<percent> compensation_share = op.compensation_share.valid() ? op.compensation_share : research.compensation_share;
-    flat_set<account_name_type> members = op.members.valid() ? *op.members : research.members;
 
-    research_service.update_research(research, 
+    research_service.update_research(
+      research, 
       description,
       is_private,
-      review_share,
-      compensation_share,
-      members);
+      op.update_extensions
+    );
 }
 
 void create_assessment_evaluator::do_apply(const create_assessment_operation& op)

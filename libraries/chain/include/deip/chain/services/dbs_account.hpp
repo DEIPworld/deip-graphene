@@ -49,6 +49,7 @@ public:
                        const public_key_type& memo_key,
                        const string& json_metadata,
                        const optional<flat_set<deip::protocol::account_trait>>& traits,
+                       const flat_set<deip::protocol::update_account_extension>& update_extensions,
                        const optional<time_point_sec>& now = optional<time_point_sec>());
 
     void update_withdraw(const account_object& account,
@@ -79,6 +80,27 @@ public:
 
     void remove_from_active_authority(const account_object& account,
                                       const account_name_type& member);
+
+    void add_to_owner_authority(const account_object& account,
+                                const account_name_type& member,
+                                const weight_type& weight = DEIP_MIN_AUTH_THRESHOLD);
+
+    void remove_from_owner_authority(const account_object& account,
+                                     const account_name_type& member);
+
+    void add_to_active_authority(const account_object& account, 
+                                 const public_key_type& key, 
+                                 const weight_type& weight = DEIP_MIN_AUTH_THRESHOLD);
+
+    void remove_from_active_authority(const account_object& account, 
+                                      const public_key_type& key);
+
+    void add_to_owner_authority(const account_object& account, 
+                                const public_key_type& key, 
+                                const weight_type& weight = DEIP_MIN_AUTH_THRESHOLD);
+
+    void remove_from_owner_authority(const account_object& account, 
+                                     const public_key_type& key);
 
     void create_account_recovery(const account_name_type& account_to_recover_name,
                                  const authority& new_owner_authority,

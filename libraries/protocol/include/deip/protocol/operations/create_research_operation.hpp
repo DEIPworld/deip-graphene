@@ -13,19 +13,13 @@ using deip::protocol::external_id_type;
 struct create_research_operation : public entity_operation
 {
     external_id_type external_id;
-    account_name_type research_group;
+    account_name_type account;
     string description;
     flat_set<external_id_type> disciplines;
     bool is_private;
-    optional<percent> review_share;
-    optional<percent> compensation_share;
-    /*
-      Research participants.
-      If the list is not provided, research will include all members within the group.
-      If the list is empty, research will not include members. They can be added later using [update_research_operation].
-      If the list has entries, they will be validated for membership token existence.
-     */
-    optional<flat_set<account_name_type>> members;
+    optional<percent> review_share; // deprecated
+    optional<percent> compensation_share; // deprecated
+    optional<flat_set<account_name_type>> members; // deprecated
     
     extensions_type extensions;
 
@@ -35,7 +29,7 @@ struct create_research_operation : public entity_operation
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(research_group);
+        a.insert(account);
     }
 };
 
@@ -45,12 +39,12 @@ struct create_research_operation : public entity_operation
 
 FC_REFLECT(deip::protocol::create_research_operation,
   (external_id)
-  (research_group)
+  (account)
   (description)
   (disciplines)
   (is_private)
-  (review_share)
-  (compensation_share)
-  (members)
+  (review_share) // deprecated
+  (compensation_share) // deprecated
+  (members) // deprecated
   (extensions)
 )
