@@ -265,7 +265,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
         {
             const auto share = util::calculate_share(grant, expertise_contribution.eci, total_research_weight);
             const auto& research = research_service.get_research(expertise_contribution.research_id);
-            const auto& research_group = research_group_service.get_research_group(research.research_group_id);
+            const auto& research_group = research_group_service.get_research_group(research.research_group);
             account_balance_service.adjust_account_balance(research_group.account, asset(share, DEIP_SYMBOL));
 
             used_grant += share;

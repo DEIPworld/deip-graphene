@@ -29,8 +29,8 @@ typedef fc::static_variant<create_account_operation, // 0
                            recover_account_operation, // 10
                            change_recovery_account_operation, // 11
 
-                           join_research_group_membership_operation, // 12
-                           leave_research_group_membership_operation, // 13
+                           join_research_contract_operation, // 12
+                           leave_research_contract_operation, // 13
                            create_research_operation, // 14
                            update_research_operation, // 15
                            create_research_content_operation, // 16
@@ -93,7 +93,8 @@ typedef fc::static_variant<create_account_operation, // 0
                            disciplines_eci_history_operation,
                            account_revenue_income_history_operation,
                            proposal_status_changed_operation,
-                           proposal_initialized_operation>
+                           create_genesis_proposal_operation,
+                           create_genesis_account_operation>
 
     operation;
 
