@@ -247,11 +247,7 @@ public:
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
-    bool verify_signed_transaction_authority(const signed_transaction& trx) const;
-    bool verify_unsigned_transaction_authority(const transaction& trx, const flat_set<account_name_type>& active_approvals_checklist, const flat_set<account_name_type>& owner_approvals_checklist) const;
-    bool verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const;
-    bool verify_proposal_authority(const external_id_type& external_id, const flat_set<account_name_type>& active_approvals_checklist, const flat_set<account_name_type>& owner_approvals_checklist) const;
-
+    bool verify_authority(const signed_transaction& trx) const;
 
     // signal handlers
     void on_applied_block(const chain::signed_block& b);
@@ -730,12 +726,12 @@ std::string database_api_impl::get_transaction_hex(const signed_transaction& trx
     return fc::to_hex(fc::raw::pack(trx));
 }
 
-bool database_api::verify_signed_transaction_authority(const signed_transaction& trx) const
+bool database_api::verify_authority(const signed_transaction& trx) const
 {
-    return my->_db.with_read_lock([&]() { return my->verify_signed_transaction_authority(trx); });
+    return my->_db.with_read_lock([&]() { return my->verify_authority(trx); });
 }
 
-bool database_api_impl::verify_signed_transaction_authority(const signed_transaction& trx) const
+bool database_api_impl::verify_authority(const signed_transaction& trx) const
 {
     auto get_active = [&](const string& account_name) {
         return authority(_db.get<account_authority_object, by_account>(account_name).active);
@@ -754,109 +750,10 @@ bool database_api_impl::verify_signed_transaction_authority(const signed_transac
         }
         return result;
     };
-    
-    try 
-    {
-        trx.verify_authority(
-            get_chain_id(),
-            get_active,
-            get_owner,
-            get_active_overrides
-        );
-        return true;
-    }
-    catch (...) 
-    {
-        return false;
-    }
+
+    trx.verify_authority(get_chain_id(), get_active, get_owner, get_active_overrides);
+    return true;
 }
-
-
-
-bool database_api::verify_unsigned_transaction_authority(const transaction& trx, const flat_set<account_name_type>& active_approvals_checklist, const flat_set<account_name_type>& owner_approvals_checklist) const
-{
-    return my->_db.with_read_lock([&]() { return my->verify_unsigned_transaction_authority(trx, active_approvals_checklist, owner_approvals_checklist); });
-}
-
-bool database_api_impl::verify_unsigned_transaction_authority(const transaction& trx, const flat_set<account_name_type>& active_approvals_checklist, const flat_set<account_name_type>& owner_approvals_checklist) const
-{
-
-    auto get_active = [&](const string& account_name) {
-        return authority(_db.get<account_authority_object, by_account>(account_name).active);
-    };
-
-    auto get_owner = [&](const string& account_name) {
-        return authority(_db.get<account_authority_object, by_account>(account_name).owner);
-    };
-
-    auto get_active_overrides = [&](const string& account_name, const uint16_t& op_tag) {
-        fc::optional<authority> result;
-        const auto& auth = _db.get<account_authority_object, by_account>(account_name);
-        if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
-        {
-            result = auth.active_overrides.at(op_tag);
-        }
-        return result;
-    };
-
-    try 
-    {
-        flat_set<public_key_type> sigs;
-        deip::protocol::verify_authority(
-          trx.operations,
-          sigs,
-          get_active,
-          get_owner,
-          get_active_overrides,
-          active_approvals_checklist,
-          owner_approvals_checklist
-        );
-
-        return true;
-    }
-    catch (...) 
-    {
-        return false;
-    }
-}
-
-
-bool database_api::verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const
-{
-    return my->_db.with_read_lock([&]() { return my->verify_account_authority(name_or_id, signers); });
-}
-
-bool database_api_impl::verify_account_authority(const string& name, const flat_set<public_key_type>& keys) const
-{
-    FC_ASSERT(name.size() > 0);
-    auto account = _db.find<account_object, by_name>(name);
-    FC_ASSERT(account, "no such account");
-
-    signed_transaction trx;
-    transfer_operation op;
-    op.from = account->name;
-    trx.operations.emplace_back(op);
-
-    return verify_signed_transaction_authority(trx);
-}
-
-bool database_api::verify_proposal_authority(const external_id_type& external_id, 
-                                             const flat_set<account_name_type>& active_approvals_checklist, 
-                                             const flat_set<account_name_type>& owner_approvals_checklist) const
-{
-    return my->_db.with_read_lock([&]() { return my->verify_proposal_authority(external_id, active_approvals_checklist, owner_approvals_checklist); });
-}
-
-bool database_api_impl::verify_proposal_authority(const external_id_type& external_id,
-                                                  const flat_set<account_name_type>& active_approvals_checklist,
-                                                  const flat_set<account_name_type>& owner_approvals_checklist) const
-{
-    const auto& proposals_service = _db.obtain_service<chain::dbs_proposal>();
-    const auto& proposal = proposals_service.get_proposal(external_id);
-
-    return proposal.is_authorized_to_execute(_db, active_approvals_checklist, owner_approvals_checklist);
-}
-
 
 u256 to256(const fc::uint128& t)
 {
