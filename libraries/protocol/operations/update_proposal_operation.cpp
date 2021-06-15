@@ -22,7 +22,8 @@ void update_proposal_operation::validate() const
                   "Cannot add and remove approval at the same time.");
     }
 
-    FC_ASSERT(key_approvals_to_add.size() == 0, "Not supported currently"); // key approvals not supported currently
+    // key approvals not supported currently, we need to implement inclusive authority checker for that
+    FC_ASSERT(key_approvals_to_add.size() == 0, "Not supported currently");
     FC_ASSERT(key_approvals_to_remove.size() == 0, "Not supported currently");
     
     // for( auto a : key_approvals_to_add )

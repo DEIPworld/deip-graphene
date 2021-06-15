@@ -46,7 +46,47 @@ bool proposal_object::is_authorized_to_execute(chainbase::database& db) const
    return true;
 }
 
+bool proposal_object::is_authorized_to_execute(chainbase::database& db,
+                                               const flat_set<account_name_type>& active_approvals_checklist,
+                                               const flat_set<account_name_type>& owner_approvals_checklist) const
+{
+    auto get_active = [&](const string& name) { 
+      return authority(db.get<account_authority_object, by_account>(name).active); 
+    };
 
+    auto get_owner = [&](const string& name) { 
+      return authority(db.get<account_authority_object, by_account>(name).owner); 
+    };
+
+    auto get_active_overrides = [&](const string& name, const uint16_t& op_tag) {
+        fc::optional<authority> result;
+        const auto& auth = db.get<account_authority_object, by_account>(name);
+        if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
+        {
+            result = auth.active_overrides.at(op_tag);
+        }
+        return result;
+    };
+
+    try
+    {
+        verify_authority(
+          proposed_transaction.operations, 
+          available_key_approvals, 
+          get_active, 
+          get_owner, 
+          get_active_overrides,
+          active_approvals_checklist, 
+          owner_approvals_checklist
+        );
+   } 
+   catch ( const fc::exception& e )
+   {
+      return false;
+   }
+
+   return true;
+}
 
 }
 } // deip::chain

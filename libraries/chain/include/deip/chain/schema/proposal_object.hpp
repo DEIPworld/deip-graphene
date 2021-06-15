@@ -52,6 +52,10 @@ public:
       time_point_sec                  created_at;
       
       bool is_authorized_to_execute(chainbase::database& db) const;
+
+      bool is_authorized_to_execute(chainbase::database& db,
+                                    const flat_set<account_name_type>& active_approvals_checklist,
+                                    const flat_set<account_name_type>& owner_approvals_checklist) const;
 };
 
 

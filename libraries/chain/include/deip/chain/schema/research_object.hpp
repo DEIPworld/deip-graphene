@@ -44,8 +44,6 @@ public:
     time_point_sec last_update_time;
     
     bool is_finished;
-    optional<percent> review_share;
-    optional<percent> compensation_share;
 
     flat_map<discipline_id_type, share_type> eci_per_discipline;
     flat_set<asset> security_tokens; // TODO: move to a separate 'security_token_terms' object
@@ -54,8 +52,6 @@ public:
     uint16_t number_of_negative_reviews = 0;
 
     uint16_t number_of_research_contents = 0;
-
-    flat_set<account_name_type> members;
 
     bool is_private;
     bool is_default;
@@ -67,66 +63,27 @@ struct by_research_group_id;
 struct by_research_group;
 struct by_external_id;
 
-typedef multi_index_container<research_object,
-  indexed_by<
+typedef multi_index_container<
+    research_object,
+    indexed_by<
 
-    ordered_unique<
-      tag<by_id>,
-        member<
-          research_object,
-          research_id_type,
-          &research_object::id
-        >
-    >,
+        ordered_unique<tag<by_id>, member<research_object, research_id_type, &research_object::id>>,
 
-    ordered_unique<
-      tag<by_external_id>,
-        member<
-          research_object,
-          external_id_type,
-          &research_object::external_id
-        >
-    >,
- 
-    ordered_non_unique<
-      tag<is_finished>,
-        member<
-          research_object,
-          bool,
-          &research_object::is_finished
-        >
-    >,
+        ordered_unique<tag<by_external_id>, member<research_object, external_id_type, &research_object::external_id>>,
 
-    ordered_non_unique<
-      tag<is_default>,
-        member<
-          research_object,
-          bool,
-          &research_object::is_default
-        >
-    >,
+        ordered_non_unique<tag<is_finished>, member<research_object, bool, &research_object::is_finished>>,
 
-    ordered_non_unique<
-      tag<by_research_group>,
-        member<
-          research_object,
-          account_name_type,
-          &research_object::research_group
-        >
-    >,
+        ordered_non_unique<tag<is_default>, member<research_object, bool, &research_object::is_default>>,
 
-    ordered_non_unique<
-      tag<by_research_group_id>,
-        member<
-          research_object,
-          research_group_id_type,
-          &research_object::research_group_id
-        >
-    >
-  >,
+        ordered_non_unique<tag<by_research_group>,
+                           member<research_object, account_name_type, &research_object::research_group>>,
 
-  allocator<research_object>>
-  research_index;
+        ordered_non_unique<tag<by_research_group_id>,
+                           member<research_object, research_group_id_type, &research_object::research_group_id>>>,
+
+    allocator<research_object>>
+    research_index;
+    
 }
 }
 
@@ -140,14 +97,11 @@ FC_REFLECT(deip::chain::research_object,
   (review_share_last_update)
   (last_update_time)
   (is_finished)
-  (review_share)
-  (compensation_share)
   (eci_per_discipline)
   (security_tokens)
   (number_of_positive_reviews)
   (number_of_negative_reviews)
   (number_of_research_contents)
-  (members)
   (is_private)
   (is_default)
 )

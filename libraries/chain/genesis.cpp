@@ -174,6 +174,8 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
           traits,
           true
         );
+
+        push_virtual_operation(create_genesis_account_operation(account.name));
     }
 }
 
@@ -441,6 +443,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
     dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
+    dbs_account& accounts_service = obtain_service<dbs_account>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
 
@@ -458,32 +461,25 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         const time_point_sec genesis_time = get_genesis_time();
         const bool& is_private = false;
         const bool& is_default = false;
-        
-        const optional<percent>& review_share = optional<percent>(percent(0));
-        const optional<percent>& compensation_share = optional<percent>(percent(0));
+        const bool& is_finished = research.is_finished;
 
-        const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
-        const auto& rg_tokens = research_groups_service.get_research_group_tokens(research_group.id);
+        const auto& account = accounts_service.get_account(research.account);
 
-        flat_set<account_name_type> members;
         for (const auto& member : research.members)
         {
-           FC_ASSERT(std::count_if(rg_tokens.begin(), rg_tokens.end(), [&](const research_group_token_object& rgt) { return rgt.owner == member; }) != 0, "User ${1} is not research group ${2} member", ("1", member)("2", research_group.account));
-           members.insert(member);
+            accounts_service.add_to_active_authority(account, member);
+            accounts_service.add_to_owner_authority(account, member);
         }
 
         const auto& created_research = research_service.create_research(
-          research_group, 
+          account, 
           research.external_id,
           research.description, 
           disciplines, 
-          review_share,
-          compensation_share,
           is_private,
-          research.is_finished,
-          members,
-          genesis_time,
-          is_default
+          is_finished,
+          is_default,
+          genesis_time
         );
 
         // const share_type SECURITY_TOKEN_MAX_SUPPLY = 10000;
@@ -570,7 +566,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         }
 
         const auto& research = research_service.get_research(research_content.research_external_id);
-        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        const auto& research_group = research_groups_service.get_research_group(research.research_group);
         
         flat_set<external_id_type> references;
         references.insert(research_content.references.begin(), research_content.references.end());
@@ -704,8 +700,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
 {
     auto& account_service = obtain_service<dbs_account>();
     auto& research_groups_service = obtain_service<dbs_research_group>();
-
-    FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
     
     const auto& creator = account_service.get_account(research_group.creator);
 
@@ -715,23 +709,36 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     auto active_authority = authority();
     active_authority.weight_threshold = 1;
 
-    for (auto& member_name : research_group.members)
+    for (const auto& member_name : research_group.members)
     {
         const auto& member = account_service.get_account(member_name);
         owner_authority.add_authority(account_name_type(member.name), 1);
         active_authority.add_authority(account_name_type(member.name), 1);
     }
 
-    if (research_group.account != research_group.tenant)
+    // legacy/deprecated
+    if (research_group.tenant != account_name_type() && research_group.account != research_group.tenant)
     {
         owner_authority.add_authority(account_name_type(research_group.tenant), 1);
         active_authority.add_authority(account_name_type(research_group.tenant), 1); 
     }
-
+    // legacy/deprecated
     if (research_group.public_key != public_key_type()) 
     {
         owner_authority.add_authority(public_key_type(research_group.public_key), 1);
         active_authority.add_authority(public_key_type(research_group.public_key), 1);
+    }
+
+    for (const auto& account_auth : research_group.account_auths)
+    {
+        owner_authority.add_authority(account_auth.first, account_auth.second);
+        active_authority.add_authority(account_auth.first, account_auth.second);
+    }
+
+    for (const auto& key_auth : research_group.key_auths)
+    {
+        owner_authority.add_authority(key_auth.first, key_auth.second);
+        active_authority.add_authority(key_auth.first, key_auth.second);
     }
 
     research_group_trait rg_trait;
@@ -756,17 +763,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
       false
     );
 
-    const auto& rg = research_groups_service.get_research_group_by_account(research_group.account);
-
-    for (auto& member_name : research_group.members)
-    {
-        if (member_name != creator.name)
-        {
-            const auto& member = account_service.get_account(member_name);
-            const share_type rgt = share_type(DEIP_100_PERCENT / research_group.members.size());
-            research_groups_service.add_member_to_research_group(member.name, rg.id, rgt, creator.name);
-        }
-    }
+    push_virtual_operation(create_genesis_account_operation(research_group.account));
 }
 
 void database::init_genesis_vesting_balances(const genesis_state_type& genesis_state)
@@ -848,7 +845,7 @@ void database::init_genesis_proposals(const genesis_state_type& genesis_state)
           key_to_remove
         );
 
-        push_virtual_operation(proposal_initialized_operation(
+        push_virtual_operation(create_genesis_proposal_operation(
           p.external_id,
           p.proposer,
           p.serialized_proposed_transaction,

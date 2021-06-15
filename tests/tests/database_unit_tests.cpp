@@ -73,37 +73,6 @@ public:
         });
     }
 
-    void create_research_group_tokens()
-    {
-        db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 31;
-            d.research_group_id = 31;
-            d.owner = "alice";
-            d.amount = 2000;
-        });
-
-        db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 32;
-            d.research_group_id = 31;
-            d.owner = "alex";
-            d.amount = 8000;
-        });
-
-        db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 33;
-            d.research_group_id = 32;
-            d.owner = "alex";
-            d.amount = 2000;
-        });
-
-        db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 34;
-            d.research_group_id = 32;
-            d.owner = "jack";
-            d.amount = 8000;
-        });
-    }
-
     void create_research_contents()
     {
         db.create<research_content_object>([&](research_content_object& d) {

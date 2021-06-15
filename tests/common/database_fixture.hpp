@@ -112,11 +112,6 @@ struct database_fixture
                                                        const bool is_dao,
                                                        const bool is_personal);
 
-
-    const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
-                                                                   const account_name_type& account,
-                                                                   const share_type amount);
-
     const research_group_object& setup_research_group(const int64_t& id,
                                                       const string& name,
                                                       const string& desciption,

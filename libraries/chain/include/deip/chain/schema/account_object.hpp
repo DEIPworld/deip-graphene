@@ -65,6 +65,7 @@ public:
     // this account
 
     uint16_t witnesses_voted_for = 0;
+
     /// This function should be used only when the account votes for a witness directly
     share_type witness_vote_weight() const
     {

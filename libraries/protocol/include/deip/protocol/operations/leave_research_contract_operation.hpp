@@ -4,7 +4,7 @@
 namespace deip {
 namespace protocol {
 
-struct leave_research_group_membership_operation : public base_operation
+struct leave_research_contract_operation : public base_operation
 {
     account_name_type member;
     account_name_type research_group;
@@ -31,7 +31,7 @@ struct leave_research_group_membership_operation : public base_operation
 }
 }
 
-FC_REFLECT(deip::protocol::leave_research_group_membership_operation,
+FC_REFLECT(deip::protocol::leave_research_contract_operation,
   (member)
   (research_group)
   (is_exclusion)

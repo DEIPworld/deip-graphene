@@ -26,7 +26,7 @@ const award_object& dbs_award::create_award(const external_id_type& funding_oppo
         award.award_number = award_number;
         award.awardee = awardee;
         award.amount = amount;
-        award.university_id = university_id;
+        award.university_id = account_id_type(university_id._id);
         award.university_external_id = university_external_id;
         award.university_overhead = university_overhead;
         award.creator = creator;

@@ -9,7 +9,7 @@ namespace protocol {
 
 void update_research_operation::validate() const
 {
-    validate_account_name(research_group);
+    validate_account_name(account);
     validate_160_bits_hexadecimal_string(external_id);
 
     if (description.valid())
@@ -18,27 +18,10 @@ void update_research_operation::validate() const
         FC_ASSERT(fc::is_utf8(*description), "Research description is not valid UTF-8 string");
     }
 
-    if (review_share.valid())
-    {
-        const auto& share = *review_share;
-        const auto& min_review_share = percent(0);
-        const auto& max_review_share = percent(DEIP_1_PERCENT * 50);
-        FC_ASSERT(share >= min_review_share && share <= max_review_share,
-          "Percent for review should be in ${1} to ${2} range. Provided value: ${3}",
-          ("1", min_review_share)("1", max_review_share)("3", share));
-    }
-      
-    if (compensation_share.valid())
-    {
-        const auto& share = *compensation_share;
-        const auto& min_compensation_share = percent(0);
-        const auto& max_compensation_share = percent(DEIP_1_PERCENT * 50);
-        FC_ASSERT(share >= min_compensation_share && share <= max_compensation_share,
-          "Percent for dropout compensation should be in ${1} to ${2} range. Provided value: ${3}.",
-          ("1", min_compensation_share)("1", max_compensation_share)("1", share));
-    }
+    FC_ASSERT(!review_share.valid(), "'review_share' field is deprecated, use join_project_contract op");
+    FC_ASSERT(!compensation_share.valid(), "'compensation_share' field is deprecated, use join_project_contract op");
 
-    if (members.valid())
+    if (members.valid()) // deprecated
     {
         const auto& list = *members;
         for (auto& member : list)
@@ -46,7 +29,11 @@ void update_research_operation::validate() const
             validate_account_name(member);
         }
     }
+
+    FC_ASSERT(update_extensions.size() == 0, "Research transfer is not supported currently");
 }
 
 } /* deip::protocol */
 } /* protocol */
+
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::update_research_extension)

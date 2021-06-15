@@ -276,7 +276,7 @@ struct post_operation_visitor
             }
         }
 
-        const auto& researches = research_service.get_researches_by_member(op.account);
+        // const auto& researches = research_service.get_researches_by_member(op.account);
         const auto& discipline = disciplines_service.get_discipline(op.discipline_id);
 
         _plugin.database().create<account_eci_history_object>([&](account_eci_history_object& hist_o) {
@@ -297,10 +297,10 @@ struct post_operation_visitor
                 hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
             }
 
-            for (const research_object& research : researches)
-            {
-                hist_o.researches.insert(research.external_id);
-            }
+            // for (const research_object& research : researches)
+            // {
+            //     hist_o.researches.insert(research.external_id);
+            // }
         });
     }
 

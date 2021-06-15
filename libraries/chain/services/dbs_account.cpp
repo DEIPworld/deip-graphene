@@ -112,20 +112,21 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         account_balance_service.adjust_account_balance(creator_name, -fee);
     }
 
-    const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {
-        acc.name = account_name;
-        acc.memo_key = memo_key;
-        acc.created = props.time;
-        acc.mined = false;
-        acc.recovery_account = creator_name;
-        acc.is_research_group = !is_user_account;
+    const auto& new_account = db_impl().create<account_object>([&](account_object& a_o) {
+        a_o.name = account_name;
+        a_o.memo_key = memo_key;
+        a_o.created = props.time;
+        a_o.mined = false;
+        a_o.recovery_account = creator_name;
+        a_o.is_research_group = !is_user_account;
 #ifndef IS_LOW_MEM
         if (json_metadata.valid())
         {
             const auto& metadata = *json_metadata;
-            fc::from_string(acc.json_metadata, metadata);
+            fc::from_string(a_o.json_metadata, metadata);
         }
 #endif
+
     });
 
     // Convert fee to Common tokens and increase account common tokens balance for throughput
@@ -143,32 +144,14 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         }
     });
 
-    if (is_user_account) // user personal workspace
-    {
-        const auto& personal_rg = research_groups_service.create_personal_research_group(account_name);
-        research_groups_service.add_member_to_research_group(
-          account_name,
-          personal_rg.id, 
-          DEIP_100_PERCENT, 
-          account_name_type()
-        );
-    }
-    else // research group workspace
+    if (!is_user_account) // user personal workspace
     {
         const account_trait trait = *traits.begin();
         const auto rg_trait = trait.get<research_group_trait>();
-
         const auto& shared_rg = research_groups_service.create_research_group(
           account_name,
           creator_name,
           rg_trait.description
-        );
-        
-        research_groups_service.add_member_to_research_group(
-          creator_name,
-          shared_rg.id,
-          DEIP_100_PERCENT,
-          account_name_type()
         );
     }
 
@@ -190,6 +173,7 @@ void dbs_account::update_acount(const account_object& account,
                                 const public_key_type& memo_key,
                                 const string& json_metadata,
                                 const optional<flat_set<deip::protocol::account_trait>>& traits,
+                                const flat_set<deip::protocol::update_account_extension>& update_extensions,
                                 const optional<time_point_sec>& now)
 {
     dbs_research_group& research_groups_service = db_impl().obtain_service<dbs_research_group>();
@@ -221,6 +205,54 @@ void dbs_account::update_acount(const account_object& account,
           rg_trait.description
         );
     }
+
+    for (const deip::protocol::update_account_extension& update_extension : update_extensions)
+    {
+        if (update_extension.which() == deip::protocol::update_account_extension::tag<authority_update_extension>().value)
+        {
+            const auto& authority_update = update_extension.get<authority_update_extension>();
+
+            for (const auto& active_account_to_add : authority_update.active_accounts_to_add)
+            {
+                add_to_active_authority(account, active_account_to_add.first, active_account_to_add.second);
+            }
+
+            for (const auto& active_account_to_remove : authority_update.active_accounts_to_remove)
+            {
+                remove_from_active_authority(account, active_account_to_remove);
+            }
+
+            for (const auto& owner_account_to_add : authority_update.owner_accounts_to_add)
+            {
+                add_to_owner_authority(account, owner_account_to_add.first, owner_account_to_add.second);
+            }
+
+            for (const auto& owner_account_to_remove : authority_update.owner_accounts_to_remove)
+            {
+                remove_from_owner_authority(account, owner_account_to_remove);
+            }
+
+            for (const auto& active_key_to_add : authority_update.active_keys_to_add)
+            {
+                add_to_active_authority(account, active_key_to_add.first, active_key_to_add.second);
+            }
+
+            for (const auto& active_key_to_remove : authority_update.active_keys_to_remove)
+            {
+                remove_from_active_authority(account, active_key_to_remove);
+            }
+
+            for (const auto& owner_key_to_add : authority_update.owner_keys_to_add)
+            {
+                add_to_active_authority(account, owner_key_to_add.first, owner_key_to_add.second);
+            }
+
+            for (const auto& owner_key_to_remove : authority_update.owner_keys_to_remove)
+            {
+                remove_from_active_authority(account, owner_key_to_remove);
+            }
+        }
+    }
 }
 
 void dbs_account::update_owner_authority(const account_object& account,
@@ -238,45 +270,133 @@ void dbs_account::update_owner_authority(const account_object& account,
         });
     }
 
-    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
-        [&](account_authority_object& auth) {
-            auth.owner = owner_authority;
-            auth.last_owner_update = t;
-        });
+    const auto& auth = db_impl().get<account_authority_object, by_account>(account.name);
+
+    db_impl().modify(auth, [&](account_authority_object& auth) {
+        auth.owner = owner_authority;
+        auth.last_owner_update = t;
+    });
 }
 
 
-void dbs_account::update_active_authority(const account_object& account,
-                                          const authority& active_authority)
+void dbs_account::update_active_authority(const account_object& account, const authority& active_authority)
 {
-    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
-        [&](account_authority_object& auth) {
-            auth.active = active_authority;
-        });
+    const auto& auth = db_impl().get<account_authority_object, by_account>(account.name);
+
+    db_impl().modify(auth, [&](account_authority_object& auth_o) { auth_o.active = active_authority; });
 }
 
-void dbs_account::add_to_active_authority(const account_object& account,
-                                          const account_name_type& member,
-                                          const weight_type& weight)
+void dbs_account::add_to_active_authority(const account_object& account, const account_name_type& member, const weight_type& weight)
 {
     db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
         [&](account_authority_object& auth) {
-            if (auth.active.account_auths.find(member) == auth.active.account_auths.end()) {
+            if (auth.active.account_auths.find(member) == auth.active.account_auths.end()) 
+            {
+                auth.active.account_auths.insert(std::make_pair(member, weight_type(weight)));
+            } 
+            else 
+            {
+                auth.active.account_auths.erase(auth.active.account_auths.find(member));
                 auth.active.account_auths.insert(std::make_pair(member, weight_type(weight)));
             }
         });
 }
 
-void dbs_account::remove_from_active_authority(const account_object& account,
-                                               const account_name_type& member)
+void dbs_account::remove_from_active_authority(const account_object& account, const account_name_type& member)
 {
     db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
         [&](account_authority_object& auth) {
-            if (auth.active.account_auths.find(member) != auth.active.account_auths.end()) {
+            if (auth.active.account_auths.find(member) != auth.active.account_auths.end()) 
+            {
                 auth.active.account_auths.erase(auth.active.account_auths.find(member));
             }
         });
 }
+
+
+void dbs_account::add_to_owner_authority(const account_object& account, const account_name_type& member, const weight_type& weight)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.owner.account_auths.find(member) == auth.owner.account_auths.end()) 
+            {
+                auth.owner.account_auths.insert(std::make_pair(member, weight_type(weight)));
+            } 
+            else 
+            {
+                auth.owner.account_auths.erase(auth.owner.account_auths.find(member));
+                auth.owner.account_auths.insert(std::make_pair(member, weight_type(weight)));
+            }
+        });
+}
+
+void dbs_account::remove_from_owner_authority(const account_object& account, const account_name_type& member)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.owner.account_auths.find(member) != auth.owner.account_auths.end()) 
+            {
+                auth.owner.account_auths.erase(auth.owner.account_auths.find(member));
+            }
+        });
+}
+
+
+void dbs_account::add_to_active_authority(const account_object& account, const public_key_type& key, const weight_type& weight)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.active.key_auths.find(key) == auth.active.key_auths.end()) 
+            {
+                auth.active.key_auths.insert(std::make_pair(key, weight_type(weight)));
+            } 
+            else 
+            {
+                auth.active.key_auths.erase(auth.active.key_auths.find(key));
+                auth.active.key_auths.insert(std::make_pair(key, weight_type(weight)));
+            }
+        });
+}
+
+void dbs_account::remove_from_active_authority(const account_object& account, const public_key_type& key)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.active.key_auths.find(key) != auth.active.key_auths.end()) 
+            {
+                auth.active.key_auths.erase(auth.active.key_auths.find(key));
+            }
+        });
+}
+
+
+void dbs_account::add_to_owner_authority(const account_object& account, const public_key_type& key, const weight_type& weight)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.owner.key_auths.find(key) == auth.owner.key_auths.end()) 
+            {
+                auth.owner.key_auths.insert(std::make_pair(key, weight_type(weight)));
+            } 
+            else 
+            {
+                auth.owner.key_auths.erase(auth.owner.key_auths.find(key));
+                auth.owner.key_auths.insert(std::make_pair(key, weight_type(weight)));
+            }
+        });
+}
+
+void dbs_account::remove_from_owner_authority(const account_object& account, const public_key_type& key)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.owner.key_auths.find(key) != auth.owner.key_auths.end()) 
+            {
+                auth.owner.key_auths.erase(auth.owner.key_auths.find(key));
+            }
+        });
+}
+
 
 void dbs_account::update_active_overrides_authorities(const account_object& account,
                                                       const flat_map<uint16_t, optional<authority>>& auth_overrides)

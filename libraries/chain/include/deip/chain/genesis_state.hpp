@@ -66,11 +66,13 @@ struct genesis_state_type
     struct research_group_type
     {
         account_name_type account;
-        protocol::public_key_type public_key;
+        protocol::public_key_type public_key; // legacy/deprecated
+        std::map<account_name_type, uint16_t> account_auths;
+        std::map<protocol::public_key_type, uint16_t> key_auths;
         account_name_type creator;
         std::string description;
         std::set<account_name_type> members;
-        std::string tenant;
+        std::string tenant; // legacy/deprecated
     };
 
     struct research_type
@@ -204,6 +206,8 @@ FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
 FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
           (account)
           (public_key)
+          (account_auths)
+          (key_auths)
           (creator)
           (description)
           (members)

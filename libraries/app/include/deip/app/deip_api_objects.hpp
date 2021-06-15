@@ -40,7 +40,6 @@ namespace deip {
 namespace app {
 
 using namespace deip::chain;
-using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
 using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
 
 using deip::protocol::percent_type;
@@ -99,11 +98,11 @@ struct account_api_obj
             active_overrides.insert(std::pair<uint16_t, authority>(pair.first, authority(pair.second)));
         }
 
-        for (auto& wrap : account_balances)
+        for (const account_balance_object& account_balance : account_balances)
         {
-            const auto& account_balance = wrap.get();
             balances.push_back(asset(account_balance.amount, account_balance.symbol));
         }
+
     }
 
     account_api_obj()
@@ -375,6 +374,7 @@ struct discipline_api_obj
     std::string name;
 };
 
+/* [DEPRECATED] */
 struct research_group_api_obj
 {
     research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
@@ -437,7 +437,6 @@ struct research_api_obj
         , number_of_negative_reviews(r_o.number_of_negative_reviews)
         , number_of_research_contents(r_o.number_of_research_contents)
         , last_update_time(r_o.last_update_time)
-        , members(r_o.members.begin(), r_o.members.end())
         , research_group(rg_api)
     {
         for (const auto& kvp : r_o.eci_per_discipline) 
@@ -448,16 +447,6 @@ struct research_api_obj
         for (const auto& st : r_o.security_tokens)
         {
             security_tokens.insert(st);
-        }
-
-        if (r_o.review_share.valid())
-        {
-            review_share = (*r_o.review_share).amount;
-        }
-        
-        if (r_o.compensation_share.valid())
-        {
-            compensation_share = (*r_o.compensation_share).amount;
         }
     }
 
@@ -474,8 +463,6 @@ struct research_api_obj
     bool is_private;
     bool is_default;
     time_point_sec created_at;
-    optional<share_type> review_share;
-    optional<share_type> compensation_share;
     vector<discipline_api_obj> disciplines;
 
     map<int64_t, int64_t> eci_per_discipline;
@@ -485,8 +472,6 @@ struct research_api_obj
     uint16_t number_of_negative_reviews;
     uint16_t number_of_research_contents;
     time_point_sec last_update_time;
-
-    std::vector<account_name_type> members;
 
     research_group_api_obj research_group;
 };
@@ -655,28 +640,6 @@ struct proposal_api_obj
     set<account_name_type> voted_accounts;
 };
 
-struct research_group_token_api_obj
-{
-    research_group_token_api_obj(const chain::research_group_token_object& rgt, const research_group_api_obj& rg)
-        : id(rgt.id._id)
-        , research_group_id(rgt.research_group_id._id)
-        , amount(rgt.amount.value)
-        , owner(rgt.owner)
-        , research_group(rg)
-    {
-    }
-
-    // because fc::variant require for temporary object
-    research_group_token_api_obj()
-    {
-    }
-
-    int64_t id;
-    int64_t research_group_id; // deprecated
-    uint32_t amount;
-    account_name_type owner;
-    research_group_api_obj research_group;
-};
 
 struct research_token_sale_api_obj
 {
@@ -1463,8 +1426,6 @@ FC_REFLECT( deip::app::research_api_obj,
             (is_private)
             (is_default)
             (created_at)
-            (review_share)
-            (compensation_share)
             (disciplines)
             (eci_per_discipline)
             (security_tokens)
@@ -1472,7 +1433,6 @@ FC_REFLECT( deip::app::research_api_obj,
             (number_of_negative_reviews)
             (number_of_research_contents)
             (last_update_time)
-            (members)
             (research_group)
 )
 
@@ -1533,14 +1493,6 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (available_owner_approvals)
             (available_key_approvals)
             (voted_accounts)
-)
-
-FC_REFLECT( deip::app::research_group_token_api_obj,
-            (id)
-            (research_group_id)
-            (amount)
-            (owner)
-            (research_group)
 )
 
 FC_REFLECT( deip::app::research_group_api_obj,

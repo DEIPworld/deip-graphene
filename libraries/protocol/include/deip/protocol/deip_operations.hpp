@@ -23,8 +23,8 @@
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
 #include <deip/protocol/operations/create_nda_content_access_request_operation.hpp>
 #include <deip/protocol/operations/fulfill_nda_content_access_request_operation.hpp>
-#include <deip/protocol/operations/join_research_group_membership_operation.hpp>
-#include <deip/protocol/operations/leave_research_group_membership_operation.hpp>
+#include <deip/protocol/operations/join_research_contract_operation.hpp>
+#include <deip/protocol/operations/leave_research_contract_operation.hpp>
 #include <deip/protocol/operations/create_research_operation.hpp>
 #include <deip/protocol/operations/create_research_content_operation.hpp>
 #include <deip/protocol/operations/create_research_token_sale_operation.hpp>

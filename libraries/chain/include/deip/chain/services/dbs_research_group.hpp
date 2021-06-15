@@ -15,6 +15,7 @@
 namespace deip {
 namespace chain {
 
+/* [DEPRECATED] */
 class dbs_research_group : public dbs_base
 {
 
@@ -26,11 +27,11 @@ class dbs_research_group : public dbs_base
 
   public:
     using research_group_refs_type = std::vector<std::reference_wrapper<const research_group_object>>;
-    using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
     using research_group_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_object>>;
-    using research_group_token_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_token_object>>;
 
     const research_group_object& get_research_group(const research_group_id_type& id) const;
+
+    const research_group_object& get_research_group(const account_name_type& id) const;
 
     const research_group_optional_ref_type get_research_group_if_exists(const research_group_id_type& id) const;
 
@@ -50,36 +51,8 @@ class dbs_research_group : public dbs_base
     const bool research_group_exists(const research_group_id_type& research_group_id) const;
 
     const bool research_group_exists(const account_name_type& account) const;
-
-    const research_group_token_object& get_research_group_token_by_id(const research_group_token_id_type& id) const;
-
-    research_group_token_refs_type get_research_group_tokens_by_member(const account_name_type& member) const;
-
-    research_group_token_refs_type get_research_group_tokens(const research_group_id_type& research_group_id) const;
-
-    const research_group_token_object& get_research_group_token_by_member(const account_name_type& member,
-                                                                          const research_group_id_type& internal_id) const;
-
-    const research_group_token_optional_ref_type get_research_group_token_by_member_if_exists(const account_name_type& member,
-                                                                                              const research_group_id_type& internal_id) const;
     
-    const bool is_research_group_member(const account_name_type& member, const research_group_id_type& research_group_id) const;
-
-    const research_group_token_object& add_member_to_research_group(const account_name_type& account,
-                                                                    const research_group_id_type& research_group_id,
-                                                                    const share_type& share,
-                                                                    const account_name_type& inviter);
-
-    research_group_token_refs_type remove_member_from_research_group(const account_name_type& account,
-                                                                     const research_group_id_type& research_group_id);
-
-    research_group_token_refs_type rebalance_research_group_tokens(const research_group_id_type& research_group_id,
-                                                                   const std::map<account_name_type, share_type> shares);
-
-    const std::set<account_name_type> get_research_group_members(const research_group_id_type& id) const;
-
-    const research_group_refs_type lookup_research_groups(const research_group_id_type& lower_bound,
-                                                          uint32_t limit) const;
+    const research_group_refs_type lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
 };
 
 } // namespace chain

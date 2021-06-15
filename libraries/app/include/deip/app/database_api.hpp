@@ -205,16 +205,11 @@ public:
 
     /// @brief Get a hexdump of the serialized binary form of a transaction
     std::string get_transaction_hex(const signed_transaction& trx) const;
-
+    
     /**
      * @return true of the @ref trx has all of the required signatures, otherwise throws an exception
      */
     bool verify_authority(const signed_transaction& trx) const;
-
-    /*
-     * @return true if the signers have enough authority to authorize an account
-     */
-    bool verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const;
 
     /**
      *  if permlink is "" then it will return all votes for author
@@ -251,20 +246,17 @@ public:
     ////////////////////
     // Research group //
     ////////////////////
-    fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
-    vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
-    vector<research_group_api_obj> get_research_groups_by_member(const account_name_type& member) const;
+    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
+    /* [DEPRECATED] */ vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
     /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
-    vector<research_group_api_obj> lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
+    /* [DEPRECATED] */ vector<research_group_api_obj> lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
 
     ////////////////
     // Researches //
     ////////////////
     fc::optional<research_api_obj> get_research(const external_id_type& id) const;
     vector<research_api_obj> get_researches(const set<external_id_type>& ids) const;
-    fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
-    vector<research_api_obj> get_researches_by_research_group_member(const account_name_type& member) const;
     vector<research_api_obj> lookup_researches(const research_id_type& lower_bound, uint32_t limit) const;
 
     //////////////////////
@@ -306,10 +298,6 @@ public:
     /////////////////////////////////
     // Research group tokens       //
     /////////////////////////////////
-    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type& member) const;
-    vector<research_group_token_api_obj> get_research_group_membership_tokens(const external_id_type& external_id) const;
-    vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const;
-    fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type& member, const research_group_id_type& internal_id) const;
 
     /////////////////////////
     // Research token sale //
@@ -533,7 +521,6 @@ FC_API(deip::app::database_api,
    // Authority / validation
    (get_transaction_hex)
    (verify_authority)
-   (verify_account_authority)
 
    // Witnesses
    (get_witnesses)
@@ -555,16 +542,13 @@ FC_API(deip::app::database_api,
    // Research group
    (get_research_group)
    (get_research_groups)
-   (get_research_groups_by_member)
    (get_research_group_by_id)
    (lookup_research_groups)
 
    // Research
    (get_research)
    (get_researches)
-   (get_research_by_id)
    (get_researches_by_research_group)
-   (get_researches_by_research_group_member)
    (lookup_researches)
 
    // Research Content
@@ -594,10 +578,6 @@ FC_API(deip::app::database_api,
    (get_proposal)
    (get_proposals_by_creator)
 
-   (get_research_group_tokens_by_account)
-   (get_research_group_membership_tokens)
-   (get_research_group_tokens_by_research_group)
-   (get_research_group_token_by_account_and_research_group_id)
 
    // Research Token Sale
    (get_research_token_sale)
