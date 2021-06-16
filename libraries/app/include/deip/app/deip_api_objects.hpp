@@ -377,8 +377,8 @@ struct research_group_api_obj
 {
     research_group_api_obj(const account_object& acc_o)
         : external_id(acc_o.name)
-        , is_dao(acc_o.name.size() == 40)
-        , is_personal(acc_o.name.size() != 40)
+        , is_dao(acc_o.is_research_group)
+        , is_personal(!acc_o.is_research_group)
     {
     }
 
