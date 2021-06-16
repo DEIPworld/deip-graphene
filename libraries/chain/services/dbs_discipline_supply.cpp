@@ -6,7 +6,6 @@
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 
@@ -221,7 +220,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
     dbs_research_content& research_content_service = db_impl().obtain_service<dbs_research_content>();
     dbs_expertise_contribution& expertise_contribution_service = db_impl().obtain_service<dbs_expertise_contribution>();
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
-    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
     auto expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline_id);
@@ -235,7 +234,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
     share_type used_grant = 0;
     share_type total_research_weight = total_eci_amount;
 
-    std::map<research_group_id_type, share_type> grant_shares_per_research;
+    std::map<account_id_type, share_type> grant_shares_per_research;
 
     // Exclude final results from share calculation and discipline_supply distribution
     const auto& final_results_idx
@@ -265,8 +264,8 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
         {
             const auto share = util::calculate_share(grant, expertise_contribution.eci, total_research_weight);
             const auto& research = research_service.get_research(expertise_contribution.research_id);
-            const auto& research_group = research_group_service.get_research_group(research.research_group);
-            account_balance_service.adjust_account_balance(research_group.account, asset(share, DEIP_SYMBOL));
+            const auto& research_group = account_service.get_account(research.research_group);
+            account_balance_service.adjust_account_balance(research_group.name, asset(share, DEIP_SYMBOL));
 
             used_grant += share;
         }

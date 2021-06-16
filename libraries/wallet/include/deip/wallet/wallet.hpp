@@ -820,16 +820,6 @@ public:
     vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
-     *  Gets the list of all research tokens for all accounts
-     */
-    vector<research_token_api_obj> list_my_research_tokens();
-
-    /**
-     *  Gets the list of all research tokens for specified account
-     */
-    vector<research_token_api_obj> list_account_research_tokens(const std::string& account_name);
-
-    /**
      *  Gets the list of all vesting balance for account
      */
     vector<vesting_balance_api_obj> get_vesting_balances(const std::string& account_name);
@@ -1079,8 +1069,6 @@ FC_API( deip::wallet::wallet_api,
         (list_my_discipline_supplies)
         (list_discipline_supply_grantors)
         (get_discipline_supplies)
-        (list_my_research_tokens)
-        (list_account_research_tokens)
         (get_vesting_balances)
         (get_proposal)
         (get_proposals_by_creator)

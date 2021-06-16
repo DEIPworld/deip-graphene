@@ -30,7 +30,6 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
-#include <deip/chain/services/dbs_research_token.hpp>
 
 
 
@@ -1850,7 +1849,6 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         private_key_type alice_priv_key = generate_private_key("alice");
 
-        research_group_create(31, "group", "test", "test", 100, true, false);
 
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
@@ -1882,12 +1880,6 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
         auto& alice_account = db.get_account("alice");
 
         BOOST_CHECK(account_balance_service.get_account_balance_by_owner_and_asset(alice_account.name, DEIP_SYMBOL).amount == 800);
-
-        auto& alice_research_token = db.get<research_token_object, by_account_name_and_research_id>(std::make_tuple("alice", 1));
-        auto& bob_research_token = db.get<research_token_object, by_account_name_and_research_id>(std::make_tuple("bob", 1));
-
-        BOOST_CHECK(alice_research_token.amount == 500);
-        BOOST_CHECK(bob_research_token.amount == 500);
     }
     FC_LOG_AND_RETHROW()
 }

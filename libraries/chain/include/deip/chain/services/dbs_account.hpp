@@ -21,7 +21,9 @@ public:
     using accounts_refs_type = std::vector<std::reference_wrapper<const account_object>>;
 
     const account_object& get_account(const account_name_type&) const;
-    
+
+    const account_object& get_account(const account_id_type&) const;
+
     const account_optional_ref_type get_account_if_exists(const account_name_type&) const;
 
     const account_authority_object& get_account_authority(const account_name_type&) const;
@@ -145,9 +147,7 @@ public:
     const accounts_refs_type lookup_user_accounts(const string& lower_bound_name, uint32_t limit) const;
 
     const accounts_refs_type lookup_research_group_accounts(const string& lower_bound_name, uint32_t limit) const;
-
-private:
-    const account_object& get_account(const account_id_type &) const;
+    
 };
 } // namespace chain
 } // namespace deip

@@ -30,10 +30,8 @@
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
-#include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_review.hpp>
@@ -1785,13 +1783,11 @@ void database::initialize_indexes()
     add_index<discipline_supply_index>();
     add_index<proposal_index>();
     add_index<recent_entity_index>();
-    add_index<research_group_index>();
     add_index<discipline_index>();
     add_index<research_discipline_relation_index>();
     add_index<research_index>();
     add_index<research_content_index>();
     add_index<expert_token_index>();
-    add_index<research_token_index>();
     add_index<research_token_sale_index>();
     add_index<research_token_sale_contribution_index>();
     add_index<expertise_contribution_index>();
@@ -2712,12 +2708,6 @@ void database::validate_invariants() const
 
             const account_balance_object& balance = *balance_opt;
             total_supply += asset(balance.amount, balance.symbol);
-        }
-
-        const auto& research_group_idx = get_index<research_group_index, by_id>();
-        for (auto itr = research_group_idx.begin(); itr != research_group_idx.end(); ++itr)
-        {
-            total_supply += itr->balance;
         }
 
         const auto& reward_pool_idx = get_index<reward_pool_index, by_id>();

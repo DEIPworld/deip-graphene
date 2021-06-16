@@ -1,6 +1,5 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 #include <tuple>

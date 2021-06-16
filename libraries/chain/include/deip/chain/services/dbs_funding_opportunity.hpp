@@ -18,11 +18,11 @@ protected:
 public:
     using funding_opportunity_refs_type = std::vector<std::reference_wrapper<const funding_opportunity_object>>;
 
-    const funding_opportunity_object& create_grant_with_officer_evaluation_distribution(const research_group_id_type& organization_id,
+    const funding_opportunity_object& create_grant_with_officer_evaluation_distribution(const account_id_type& organization_id,
                                                                                         const external_id_type& organization_external_id,
-                                                                                        const research_group_id_type& review_committee_id,
+                                                                                        const account_id_type& review_committee_id,
                                                                                         const external_id_type& review_committee_external_id,
-                                                                                        const research_group_id_type& treasury_id,
+                                                                                        const account_id_type& treasury_id,
                                                                                         const external_id_type& treasury_external_id,
                                                                                         const account_name_type& grantor,
                                                                                         const external_id_type& funding_opportunity_number,
@@ -41,7 +41,7 @@ public:
                                                                                     const std::set<discipline_id_type>& target_disciplines,
                                                                                     const external_id_type& funding_opportunity_number,
                                                                                     const flat_map<string, string>& additional_info,
-                                                                                    const research_group_id_type& review_committee_id,
+                                                                                    const account_id_type& review_committee_id,
                                                                                     const external_id_type& review_committee_external_id,
                                                                                     const uint16_t& min_number_of_positive_reviews,
                                                                                     const uint16_t& min_number_of_applications,
@@ -63,7 +63,7 @@ public:
 
     funding_opportunity_refs_type get_funding_opportunity_announcements_by_grantor(const account_name_type& owner) const;
     
-    funding_opportunity_refs_type get_funding_opportunity_announcements_by_organization(const research_group_id_type& organization_id) const;
+    funding_opportunity_refs_type get_funding_opportunity_announcements_by_organization(const account_id_type& organization_id) const;
 
     funding_opportunity_refs_type get_funding_opportunity_announcements_listing(const uint16_t& page, const uint16_t& limit) const;
     

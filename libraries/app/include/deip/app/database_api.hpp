@@ -243,14 +243,6 @@ public:
     fc::optional<discipline_api_obj> get_discipline(const external_id_type& external_id) const;
     vector<discipline_api_obj> get_disciplines_by_parent(const external_id_type& parent_external_id) const;
 
-    ////////////////////
-    // Research group //
-    ////////////////////
-    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
-    /* [DEPRECATED] */ vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
-    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
-    /* [DEPRECATED] */ vector<research_group_api_obj> lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
-
     ////////////////
     // Researches //
     ////////////////
@@ -339,14 +331,6 @@ public:
     ///////////////////////////////
     vector<grant_application_review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
-    /////////////////////
-    // Research token ///
-    /////////////////////
-    fc::optional<research_token_api_obj> get_research_token_by_id(const research_token_id_type& research_token_id) const;
-    vector<research_token_api_obj> get_research_tokens_by_account_name(const account_name_type &account_name) const;
-    vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
-    fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name, const research_id_type &research_id) const;
-
 
     /////////////////////////
     // Review vote object ///
@@ -402,7 +386,7 @@ public:
 
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement_by_number(const string& number) const;
-    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_organization(const research_group_id_type& research_group_id) const;
+    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_organization(const account_id_type& research_group_id) const;
     vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_listing(const uint16_t& page, const uint16_t& limit) const;
 
 
@@ -539,12 +523,6 @@ FC_API(deip::app::database_api,
    (get_discipline)
    (get_disciplines_by_parent)
 
-   // Research group
-   (get_research_group)
-   (get_research_groups)
-   (get_research_group_by_id)
-   (lookup_research_groups)
-
    // Research
    (get_research)
    (get_researches)
@@ -608,12 +586,6 @@ FC_API(deip::app::database_api,
 
    // Grant Application Reviews
    (get_reviews_by_grant_application)
-
-   // Research token
-   (get_research_token_by_id)
-   (get_research_tokens_by_account_name)
-   (get_research_tokens_by_research_id)
-   (get_research_token_by_account_name_and_research_id)
 
    // Review votes
    (get_review_votes_by_voter)

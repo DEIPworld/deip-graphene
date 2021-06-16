@@ -24,8 +24,7 @@ public:
     using research_content_refs_type = std::vector<std::reference_wrapper<const research_content_object>>;
     using research_content_optional_ref_type = fc::optional<std::reference_wrapper<const research_content_object>>;
 
-    const research_content_object& create_research_content(const research_group_object& research_group,
-                                                           const research_object& research,
+    const research_content_object& create_research_content(const research_object& research,
                                                            const external_id_type& external_id,
                                                            const std::string& description,
                                                            const std::string& content,

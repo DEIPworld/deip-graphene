@@ -30,11 +30,11 @@ public:
 
     funding_opportunity_id_type id;
 
-    research_group_id_type organization_id;
+    account_id_type organization_id;
     external_id_type organization_external_id;
-    research_group_id_type review_committee_id;
+    account_id_type review_committee_id;
     external_id_type review_committee_external_id;
-    research_group_id_type treasury_id;
+    account_id_type treasury_id;
     external_id_type treasury_external_id;
 
     account_name_type grantor;
@@ -101,7 +101,7 @@ typedef multi_index_container<funding_opportunity_object,
       tag<by_organization>,
         member<
           funding_opportunity_object,
-          research_group_id_type,
+          account_id_type,
           &funding_opportunity_object::organization_id
         >
     >,

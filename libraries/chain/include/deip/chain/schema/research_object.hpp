@@ -36,7 +36,7 @@ public:
 
     research_id_type id;
     external_id_type external_id;
-    research_group_id_type research_group_id;
+    account_id_type research_group_id;
     external_id_type research_group;
     shared_string description;
     time_point_sec created_at;
@@ -67,23 +67,38 @@ typedef multi_index_container<
     research_object,
     indexed_by<
 
-        ordered_unique<tag<by_id>, member<research_object, research_id_type, &research_object::id>>,
+        ordered_unique<tag<by_id>, 
+          member<research_object, 
+                research_id_type, 
+                &research_object::id>>,
 
-        ordered_unique<tag<by_external_id>, member<research_object, external_id_type, &research_object::external_id>>,
+        ordered_unique<tag<by_external_id>, 
+            member<research_object,
+                external_id_type, 
+                &research_object::external_id>>,
 
-        ordered_non_unique<tag<is_finished>, member<research_object, bool, &research_object::is_finished>>,
+        ordered_non_unique<tag<is_finished>, 
+            member<research_object, 
+                bool, 
+                &research_object::is_finished>>,
 
-        ordered_non_unique<tag<is_default>, member<research_object, bool, &research_object::is_default>>,
+        ordered_non_unique<tag<is_default>, 
+            member<research_object, 
+                bool, 
+                &research_object::is_default>>,
 
         ordered_non_unique<tag<by_research_group>,
-                           member<research_object, account_name_type, &research_object::research_group>>,
+            member<research_object, 
+                account_name_type, 
+                &research_object::research_group>>,
 
         ordered_non_unique<tag<by_research_group_id>,
-                           member<research_object, research_group_id_type, &research_object::research_group_id>>>,
+            member<research_object, 
+                  account_id_type, 
+                  &research_object::research_group_id>>>,
 
     allocator<research_object>>
     research_index;
-    
 }
 }
 

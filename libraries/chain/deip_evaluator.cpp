@@ -19,12 +19,10 @@
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
@@ -818,7 +816,6 @@ void delete_proposal_evaluator::do_apply(const delete_proposal_operation& op)
 
 void create_review_evaluator::do_apply(const create_review_operation& op)
 {
-    auto& research_group_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& disciplines_service = _db.obtain_service<dbs_discipline>();
     auto& review_service = _db.obtain_service<dbs_review>();
@@ -1162,15 +1159,14 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
-    const auto& accounts_service = _db.obtain_service<dbs_account>();
+    const auto& account_service = _db.obtain_service<dbs_account>();
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
-    const auto& research_group_service = _db.obtain_service<dbs_research_group>();
     auto& funding_opportunities_service = _db.obtain_service<dbs_funding_opportunity>();
     const auto& assets_service = _db.obtain_service<dbs_asset>();
     auto& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
     auto& discipline_service = _db.obtain_service<dbs_discipline>();
 
-    FC_ASSERT(accounts_service.account_exists(op.grantor), "Account ${a} does not exists", ("a", op.grantor));
+    FC_ASSERT(account_service.account_exists(op.grantor), "Account ${a} does not exists", ("a", op.grantor));
     FC_ASSERT(assets_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${s} does not exists", ("s", op.amount.symbol));
 
     std::set<discipline_id_type> target_disciplines;
@@ -1194,14 +1190,11 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     {
         const auto contract = op.distribution_model.get<announced_application_window_contract_type>();
         
-        FC_ASSERT(research_group_service.research_group_exists(contract.review_committee_id), 
-          "Review committee ${rg} does not exists", 
-          ("rg", contract.review_committee_id));
-          
+
         FC_ASSERT(contract.open_date >= _db.head_block_time(), "Start date must be greater than now");
         FC_ASSERT(contract.open_date < contract.close_date, "Open date must be earlier than close date");
 
-        const auto& review_committee = research_group_service.get_research_group_by_account(contract.review_committee_id);
+        const auto& review_committee = account_service.get_account(contract.review_committee_id);
 
         funding_opportunities_service.create_grant_with_eci_evaluation_distribution(
           op.grantor,
@@ -1210,7 +1203,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           op.external_id,
           contract.additional_info,
           review_committee.id,
-          review_committee.account,
+          review_committee.name,
           contract.min_number_of_positive_reviews,
           contract.min_number_of_applications,
           contract.max_number_of_research_to_grant,
@@ -1221,35 +1214,20 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     else if (op.distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_type>::value)
     {
         const auto contract = op.distribution_model.get<funding_opportunity_announcement_contract_type>();
-        
-        FC_ASSERT(research_group_service.research_group_exists(contract.organization_id), 
-          "Organization ${1} does not exists", 
-          ("1", contract.organization_id));
-
-        FC_ASSERT(research_group_service.research_group_exists(contract.review_committee_id), 
-          "Review committee ${1} does not exists", 
-          ("1", contract.review_committee_id));
-
-        FC_ASSERT(research_group_service.research_group_exists(contract.treasury_id), 
-          "Treasury ${1} does not exists", 
-          ("1", contract.treasury_id));
-
-        const auto& organization = research_group_service.get_research_group_by_account(contract.organization_id);
-        const auto& review_committee = research_group_service.get_research_group_by_account(contract.review_committee_id);
-        const auto& treasury = research_group_service.get_research_group_by_account(contract.treasury_id);
+        const auto& organization = account_service.get_account(contract.organization_id);
+        const auto& review_committee = account_service.get_account(contract.review_committee_id);
+        const auto& treasury = account_service.get_account(contract.treasury_id);
 
         FC_ASSERT(contract.open_date >= _db.head_block_time(), "Open date must be greater than now");
         FC_ASSERT(contract.open_date < contract.close_date, "Open date must be earlier than close date");
 
-
-
         funding_opportunities_service.create_grant_with_officer_evaluation_distribution(
           organization.id,
-          organization.account,
+          organization.name,
           review_committee.id,
-          review_committee.account,
+          review_committee.name,
           treasury.id,
-          treasury.account,
+          treasury.name,
           op.grantor,
           op.external_id,
           contract.additional_info,
@@ -1290,7 +1268,6 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
     const dbs_account& account_service = _db.obtain_service<dbs_account>();
     const dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
     const dbs_research& research_service = _db.obtain_service<dbs_research>();
-    const dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     const dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
 
@@ -1334,7 +1311,6 @@ void create_review_for_application_evaluator::do_apply(const create_review_for_a
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     FC_ASSERT(account_service.account_exists(op.author),
               "Account(author) ${1} does not exist",
@@ -1378,7 +1354,6 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     account_service.check_account_existence(op.approver);
     grant_application_service.check_grant_application_existence(op.grant_application_id);
@@ -1397,7 +1372,6 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     account_service.check_account_existence(op.rejector);
     grant_application_service.check_grant_application_existence(op.grant_application_id);
@@ -1415,7 +1389,6 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     int p = std::pow(10, op.precision);
     std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + op.symbol;
@@ -1434,9 +1407,9 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
             const auto& security_token_trait = asset_trait.get<research_security_token_trait>();
 
             const auto& research = research_service.get_research(security_token_trait.research_external_id);
-            const auto& research_group = research_group_service.get_research_group_by_account(security_token_trait.research_group);
+            const auto& research_group = account_service.get_account(security_token_trait.research_group);
 
-            FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
+            FC_ASSERT(research_group.name == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.name));
             tokenized_research = research;
         }
 
@@ -1495,7 +1468,6 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_award& award_service = _db.obtain_service<dbs_award>();
     dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
@@ -1511,10 +1483,6 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Research ID:${1} does not exist",
       ("1", op.research_external_id));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.university_external_id),
-      "University with ID:${1} does not exist",
-      ("1", op.university_external_id));
-
     FC_ASSERT(funding_opportunity_service.funding_opportunity_exists(op.funding_opportunity_number),
       "Funding opportunity with ID ${1} does not exist", 
       ("1", op.funding_opportunity_number));
@@ -1529,9 +1497,9 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Funding opportunity does not have enough funds to award. Availabale amount:${1}, Required amount:${2}.",
       ("1", foa.current_supply.amount)("2", op.award.amount));
 
-    const auto& foa_organization = research_group_service.get_research_group(foa.organization_id);
+    const auto& foa_organization = account_service.get_account(foa.organization_id._id);
 
-    FC_ASSERT(op.university_external_id != foa_organization.account,
+    FC_ASSERT(op.university_external_id != foa_organization.name,
       "Funding opportunity agency ${1} is not allowed as intermediary",
       ("1", op.university_external_id));
 
@@ -1542,7 +1510,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
     FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.creator, op.award.symbol),
               "Account balance for ${1} for asset ${2} does not exist", ("1", op.creator)("2", op.award.symbol_name()));
 
-    const auto& university = research_group_service.get_research_group_by_account(op.university_external_id);
+    const auto& university = account_service.get_account(op.university_external_id);
     const auto& research = research_service.get_research(op.research_external_id);
 
     const asset university_fee = asset((op.award.amount * op.university_overhead.amount) / DEIP_100_PERCENT, op.award.symbol);
@@ -1569,7 +1537,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       op.awardee,
       op.award, 
       university.id,
-      university.account,
+      university.name,
       op.university_overhead,
       op.creator,
       award_status::pending);
@@ -1615,7 +1583,6 @@ void approve_award_evaluator::do_apply(const approve_award_operation& op)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_award& award_service = _db.obtain_service<dbs_award>();
     dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
     FC_ASSERT(account_service.account_exists(op.approver),
@@ -1638,9 +1605,9 @@ void approve_award_evaluator::do_apply(const approve_award_operation& op)
       "Only pending award can be approved. The current status is: ${1}",
       ("1", award.status));
 
-    const auto& university = research_group_service.get_research_group(research_group_id_type(award.university_id._id));
+    const auto& university = account_service.get_account(account_id_type(award.university_id._id));
     const asset university_fee = asset(((award.amount.amount * share_type(award.university_overhead.amount)) / DEIP_100_PERCENT), award.amount.symbol);
-    account_balance_service.adjust_account_balance(university.creator, university_fee);
+    account_balance_service.adjust_account_balance(university.name, university_fee);
 
     auto awardees = award_service.get_award_recipients_by_award(op.award_number);
 
@@ -1878,7 +1845,6 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
     dbs_award& award_service = _db.obtain_service<dbs_award>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
 
     const external_id_type payment_number = op.payment_number;
@@ -1905,7 +1871,7 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
       ("1", withdrawal.status));
 
     const auto& foa = funding_opportunity_service.get_funding_opportunity(award_recipient.funding_opportunity_number);
-    const auto& treasury = research_group_service.get_research_group(foa.treasury_id);
+    const auto& treasury = account_service.get_account(account_id_type(foa.treasury_id));
 
     FC_ASSERT(award_recipient.total_amount - award_recipient.total_expenses >= withdrawal.amount, 
       "Not enough funds to process the payment. Requested ${1}, Available: ${2} ", 
@@ -1920,7 +1886,7 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     const asset payout = withdrawal.amount * rate;
 
     account_balance_service.adjust_account_balance(withdrawal.requester, payout); // imitation of acquiring api call
-    account_balance_service.adjust_account_balance(treasury.creator, -payout); // imitation of acquiring api call
+    account_balance_service.adjust_account_balance(treasury.name, -payout); // imitation of acquiring api call
 
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
 }
@@ -2025,7 +1991,6 @@ void fulfill_nda_content_access_request_evaluator::do_apply(const fulfill_nda_co
 void join_research_contract_evaluator::do_apply(const join_research_contract_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
 
     FC_ASSERT(account_service.account_exists(op.member), "Account ${1} does not exist", ("1", op.member));
@@ -2040,7 +2005,6 @@ void join_research_contract_evaluator::do_apply(const join_research_contract_ope
 void leave_research_contract_evaluator::do_apply(const leave_research_contract_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
 
     FC_ASSERT(account_service.account_exists(op.member), "Account ${1} does not exist", ("1", op.member));
@@ -2054,7 +2018,6 @@ void leave_research_contract_evaluator::do_apply(const leave_research_contract_o
 void create_research_evaluator::do_apply(const create_research_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& discipline_service =_db.obtain_service<dbs_discipline>();
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
@@ -2093,7 +2056,6 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
 void create_research_content_evaluator::do_apply(const create_research_content_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& research_group_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_content_service = _db.obtain_service<dbs_research_content>();
     auto& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
@@ -2108,7 +2070,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       "Account(creator) ${1} does not exist",
       ("1", op.research_group));
 
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
+    const auto& research_group = account_service.get_account(op.research_group);
 
     FC_ASSERT(research_service.research_exists(op.research_external_id),
       "Research with external id: ${1} does not exist",
@@ -2116,21 +2078,15 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
 
     const auto& research = research_service.get_research(op.research_external_id);
 
-    FC_ASSERT(research.research_group == research_group.account,
+    FC_ASSERT(research.research_group == research_group.name,
       "Research ${1} does not belong to research group ${2}",
-      ("1", research.external_id)("2", research_group.account));
+      ("1", research.external_id)("2", research_group.name));
 
     FC_ASSERT(!research.is_finished,
       "The research ${1} has been finished already",
       ("1", research.description));
 
-    for (auto& author : op.authors)
-    {
-        // TODO: check auths
-    }
-
     const auto& research_content = research_content_service.create_research_content(
-      research_group,
       research,
       op.external_id,
       op.description,
@@ -2214,7 +2170,6 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
 {
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& research_service = _db.obtain_service<dbs_research>();
-    auto& research_group_service = _db.obtain_service<dbs_research_group>();
     auto& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
     auto& asset_service = _db.obtain_service<dbs_asset>();
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
@@ -2230,7 +2185,7 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
       "Account ${1} does not exist",
       ("1", op.research_group));
 
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
+    const auto& research_group = account_service.get_account(op.research_group);
 
     FC_ASSERT(research_service.research_exists(op.research_external_id),
       "Research with external id: ${1} does not exist",
@@ -2254,8 +2209,8 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
         FC_ASSERT(security_token_balance.to_asset() >= security_token_on_sale, "Research group ${1} security token balance (${2}) is not enough", ("1", research.research_group)("2", security_token_balance.to_asset()));
     }
 
-    FC_ASSERT(research.research_group == research_group.account, "Research ${1} does not belong to research group ${2}",
-      ("1", op.research_external_id)("2", research_group.account));
+    FC_ASSERT(research.research_group == research_group.name, "Research ${1} does not belong to research group ${2}",
+      ("1", op.research_external_id)("2", research_group.name));
 
     const auto& active_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::active);
     const auto& inactive_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::inactive);
@@ -2283,7 +2238,6 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& research_service = _db.obtain_service<dbs_research>();
-    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
 
     FC_ASSERT(account_service.account_exists(op.account),
       "Account(creator) ${1} does not exist",
@@ -2321,7 +2275,6 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 {
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
     auto& research_service = _db.obtain_service<dbs_research>();
-    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& asset_service = _db.obtain_service<dbs_asset>();
     auto& research_license_service = _db.obtain_service<dbs_research_license>();
     auto& account_service = _db.obtain_service<dbs_account>();
@@ -2333,11 +2286,11 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
     FC_ASSERT(account_service.account_exists(op.licenser), "Account ${1} does not exist", ("1", op.licenser));
     FC_ASSERT(account_service.account_exists(op.licensee), "Account ${1} does not exist", ("1", op.licensee));
 
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.licenser);
+    const auto& research_group = account_service.get_account(op.licenser);
     const auto& research = research_service.get_research(op.research_external_id);
     const auto& now = _db.head_block_time();
 
-    FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
+    FC_ASSERT(research_group.name == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.name));
 
     if (op.license_conditions.which() == license_agreement_types::tag<licensing_fee_type>::value)
     {

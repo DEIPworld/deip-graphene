@@ -4,7 +4,6 @@
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <tuple>

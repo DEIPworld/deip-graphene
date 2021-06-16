@@ -17,7 +17,6 @@
 #include <iomanip>
 #include <sstream>
 #include  <deip/chain/schema/account_balance_object.hpp>
-#include <deip/chain/schema/research_token_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -404,43 +403,10 @@ const witness_object& database_fixture::witness_create(const string& owner,
     FC_CAPTURE_AND_RETHROW((owner)(url))
 }
 
-const research_group_object&
-database_fixture::research_group_create(const int64_t& id,
-                                        const string& name,
-                                        const string& description,
-                                        const share_type funds,
-                                        const bool is_dao,
-                                        const bool is_personal)
-{
-    const research_group_object& new_research_group
-        = db.create<research_group_object>([&](research_group_object& rg) {
-              rg.id = id;
-              fc::from_string(rg.name, name);
-              fc::from_string(rg.description, description);
-              rg.balance = funds;
-              rg.is_dao = is_dao;
-              rg.is_personal = is_personal;
-          });
-
-    return new_research_group;
-}
-
-const research_group_object& database_fixture::setup_research_group(const int64_t& id,
-                                       const string& name,
-                                       const string& description,
-                                       const share_type funds,
-                                       const bool is_dao,
-                                       const bool is_personal,
-                                       const vector<std::pair<account_name_type, share_type>>& accounts)
-{
-    const auto& research_group = research_group_create(id, name, description, funds, is_dao, is_personal);
-    return research_group;
-}
-
 const research_object& database_fixture::research_create(const int64_t id,
                                                          const string& title,
                                                          const string& abstract,
-                                                         const research_group_id_type& research_group_id)
+                                                         const account_id_type& research_group_id)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
@@ -452,21 +418,6 @@ const research_object& database_fixture::research_create(const int64_t id,
     });
 
     return new_research;
-}
-
-const research_token_object& database_fixture::research_token_create(const int64_t id, 
-                                                                     const account_name_type& owner,
-                                                                     const uint16_t amount,
-                                                                     const int64_t research_id)    
-{
-    const auto& new_research_token = db.create<research_token_object>([&](research_token_object& r) {
-        r.id = id;
-        r.account_name = owner;
-        r.amount = amount;
-        r.research_id = research_id;
-    });
-
-    return new_research_token;
 }
     
 const research_content_object& database_fixture::research_content_create(

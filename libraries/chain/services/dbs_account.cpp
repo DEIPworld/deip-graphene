@@ -4,7 +4,7 @@
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 namespace deip {
@@ -22,6 +22,15 @@ const account_object& dbs_account::get_account(const account_name_type& name) co
         return db_impl().get<account_object, by_name>(name);
     }
     FC_CAPTURE_AND_RETHROW((name))
+}
+
+const account_object& dbs_account::get_account(const account_id_type& id) const
+{
+    try
+    {
+        return db_impl().get<account_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const dbs_account::account_optional_ref_type dbs_account::get_account_if_exists(const account_name_type& name) const
@@ -95,7 +104,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
                                                              const flat_set<account_trait>& traits,
                                                              const bool& is_user_account)
 {
-    auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
+    auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
     auto& asset_service = db_impl().obtain_service<dbs_asset>();
 
@@ -144,16 +153,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         }
     });
 
-    if (!is_user_account) // user personal workspace
-    {
-        const account_trait trait = *traits.begin();
-        const auto rg_trait = trait.get<research_group_trait>();
-        const auto& shared_rg = research_groups_service.create_research_group(
-          account_name,
-          creator_name,
-          rg_trait.description
-        );
-    }
+    research_service.create_default_research(account_name);
 
     const auto& default_assets = asset_service.get_default_assets();
     for (const asset_object& default_asset : default_assets)
@@ -176,7 +176,6 @@ void dbs_account::update_acount(const account_object& account,
                                 const flat_set<deip::protocol::update_account_extension>& update_extensions,
                                 const optional<time_point_sec>& now)
 {
-    dbs_research_group& research_groups_service = db_impl().obtain_service<dbs_research_group>();
 
     _time t = _get_now(now);
 
@@ -191,20 +190,6 @@ void dbs_account::update_acount(const account_object& account,
             fc::from_string(acc.json_metadata, json_metadata);
 #endif
     });
-
-    if (account.is_research_group && traits.valid() && traits->size() == 1) // research group workspace
-    {
-        const account_trait trait = *traits->begin();
-        const auto rg_trait = trait.get<research_group_trait>();
-        const auto& research_group = research_groups_service.get_research_group_by_account(account.name);
-
-        FC_ASSERT(!research_group.is_personal, "Personal research group is preserved and can not be edited");
-
-        research_groups_service.update_research_group(
-          research_group,
-          rg_trait.description
-        );
-    }
 
     for (const deip::protocol::update_account_extension& update_extension : update_extensions)
     {
@@ -674,14 +659,6 @@ void dbs_account::adjust_proxied_witness_votes(const account_object& account, sh
     {
         witness_service.adjust_witness_votes(account, delta);
     }
-}
-
-const account_object& dbs_account::get_account(const account_id_type& account_id) const
-{
-    try {
-        return db_impl().get<account_object, by_id>(account_id);
-    }
-    FC_CAPTURE_AND_RETHROW((account_id))
 }
 
 void dbs_account::increase_common_tokens(const account_object &account, const share_type &amount)

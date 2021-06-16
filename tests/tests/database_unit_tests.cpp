@@ -8,8 +8,7 @@
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
-#include <deip/chain/schema/research_token_object.hpp>
-#include <deip/chain/schema/review_object.hpp>
+s#include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/reward_pool_object.hpp>
 
 #include <deip/chain/services/dbs_account_balance.hpp>
@@ -42,34 +41,6 @@ public:
             d.id = 2;
             d.research_group_id = 32;
             d.description = "name2";
-        });
-    }
-
-    void create_research_tokens()
-    {
-        db.create<research_token_object>([&](research_token_object& d) {
-            d.id = 1;
-            d.account_name = "alice";
-            d.research_id = 2;
-            d.amount = 20 * DEIP_1_PERCENT;
-        });
-
-        db.create<research_token_object>([&](research_token_object& d) {
-            d.id = 2;
-            d.account_name = "bob";
-            d.research_id = 2;
-            d.amount = 30 * DEIP_1_PERCENT;
-        });
-    }
-
-    void create_research_groups()
-    {
-        db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 31;
-        });
-
-        db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 32;
         });
     }
 
@@ -277,21 +248,6 @@ public:
             d.research_group_id = 33;
             d.description = "name3";
             d.number_of_positive_reviews = 10;
-        });
-    }
-
-    void create_research_groups_for_grants()
-    {
-        db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 31;
-        });
-
-        db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 32;
-        });
-
-        db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 33;
         });
     }
 

@@ -1,8 +1,7 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/database/database.hpp>
@@ -321,7 +320,7 @@ const dbs_research_token_sale::research_token_sale_contribution_refs_type dbs_re
 void dbs_research_token_sale::finish_research_token_sale(const research_token_sale_id_type& research_token_sale_id)
 {
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
-    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
     dbs_asset& asset_service = db_impl().obtain_service<dbs_asset>();
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
@@ -333,7 +332,7 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
 
     const auto& research_token_sale = get_research_token_sale_by_id(research_token_sale_id);
     const auto& research = research_service.get_research(research_token_sale.research_id);
-    const auto& research_group = research_group_service.get_research_group(research.research_group);
+    const auto& research_group = account_service.get_account(research.research_group);
 
     for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
     {
@@ -383,7 +382,7 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
         db_impl().remove(*current);
     }
 
-    account_balance_service.adjust_account_balance(research_group.account, research_token_sale.total_amount);
+    account_balance_service.adjust_account_balance(research_group.name, research_token_sale.total_amount);
 }
 
 void dbs_research_token_sale::refund_research_token_sale(const research_token_sale_id_type research_token_sale_id)

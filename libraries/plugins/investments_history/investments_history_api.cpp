@@ -3,7 +3,6 @@
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_research.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/investments_history/investments_history_api.hpp>
 #include <deip/investments_history/investments_history_plugin.hpp>
 #include <deip/investments_history/account_revenue_income_history_object.hpp>

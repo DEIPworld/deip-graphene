@@ -19,9 +19,7 @@
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
-#include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
-#include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/research_token_sale_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/review_vote_object.hpp>
@@ -377,28 +375,10 @@ struct discipline_api_obj
 /* [DEPRECATED] */
 struct research_group_api_obj
 {
-    research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
-        : id(rg_o.id._id)
-        , external_id(rg_o.account)
-        , creator(rg_o.creator)
-        , description(fc::to_string(rg_o.description))
-        , quorum_percent(rg_o.default_quorum)
-        , is_dao(rg_o.is_dao)
-        , is_personal(rg_o.is_personal)
-        , is_centralized(rg_o.is_centralized)
-        , account(acc_o)
-    {
-    }
-
-    research_group_api_obj(const chain::research_group_object& rg_o)
-        : id(rg_o.id._id)
-        , external_id(rg_o.account)
-        , creator(rg_o.creator)
-        , description(fc::to_string(rg_o.description))
-        , quorum_percent(rg_o.default_quorum)
-        , is_dao(rg_o.is_dao)
-        , is_personal(rg_o.is_personal)
-        , is_centralized(rg_o.is_centralized)
+    research_group_api_obj(const account_object& acc_o)
+        : external_id(acc_o.name)
+        , is_dao(acc_o.name.size() == 40)
+        , is_personal(acc_o.name.size() != 40)
     {
     }
 
@@ -407,15 +387,9 @@ struct research_group_api_obj
     {
     }
 
-    int64_t id;
     external_id_type external_id;
-    account_name_type creator;
-    std::string description;
-    percent_type quorum_percent;
     bool is_dao;
     bool is_personal;
-    bool is_centralized;
-    fc::optional<account_api_obj> account;
 };
 
 struct research_api_obj
@@ -789,30 +763,6 @@ struct review_api_obj
     map<uint16_t, uint16_t> scores;
 };
 
-struct research_token_api_obj
-{
-    research_token_api_obj(const chain::research_token_object& rt_o)
-        : id(rt_o.id._id)
-        , account_name(rt_o.account_name)
-        , research_id(rt_o.research_id._id)
-        , research_external_id(rt_o.research_external_id)
-        , amount(rt_o.amount)
-        , is_compensation(rt_o.is_compensation)
-    {}
-
-    // because fc::variant require for temporary object
-    research_token_api_obj()
-    {
-    }
-
-    int64_t id;
-    account_name_type account_name;
-    int64_t research_id;
-    string research_external_id;
-    share_type amount;
-    bool is_compensation;
-};
-
 struct review_vote_api_obj
 {
     review_vote_api_obj(const chain::review_vote_object& rvo)
@@ -1035,11 +985,11 @@ struct funding_opportunity_api_obj
     }
 
     int64_t id;
-    research_group_id_type organization_id;
+    account_id_type organization_id;
     external_id_type organization_external_id;
-    research_group_id_type review_committee_id;
+    account_id_type review_committee_id;
     external_id_type review_committee_external_id;
-    research_group_id_type treasury_id;
+    account_id_type treasury_id;
     external_id_type treasury_external_id;
 
     account_name_type grantor;
@@ -1496,15 +1446,9 @@ FC_REFLECT( deip::app::proposal_api_obj,
 )
 
 FC_REFLECT( deip::app::research_group_api_obj,
-            (id)
             (external_id)
-            (creator)
-            (description)
-            (quorum_percent)
             (is_dao)
             (is_personal)
-            (is_centralized)
-            (account)
 )
 
 FC_REFLECT( deip::app::research_token_sale_api_obj,
@@ -1562,14 +1506,6 @@ FC_REFLECT( deip::app::review_api_obj,
             (scores)
 )
 
-FC_REFLECT( deip::app::research_token_api_obj,
-            (id)
-            (account_name)
-            (research_id)
-            (research_external_id)
-            (amount)
-            (is_compensation)
-)
 
 
 FC_REFLECT( deip::app::review_vote_api_obj,

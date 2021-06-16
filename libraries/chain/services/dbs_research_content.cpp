@@ -1,5 +1,4 @@
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research.hpp>
@@ -16,7 +15,6 @@ dbs_research_content::dbs_research_content(database &db) : _base_type(db)
 }
 
 const research_content_object& dbs_research_content::create_research_content(
-  const research_group_object& research_group,
   const research_object& research,
   const external_id_type& external_id,
   const std::string& description,

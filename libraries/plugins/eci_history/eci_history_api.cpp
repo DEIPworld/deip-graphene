@@ -5,7 +5,6 @@
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -44,9 +43,9 @@ public:
 
         const auto& db = _app.chain_database();
         const auto& research_content_hist_idx = db->get_index<research_content_eci_history_index>().indices().get<by_research_content_and_cursor>();
+        const auto& account_service = db->obtain_service<chain::dbs_account>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
-        const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
 
         const auto& research_content_opt = research_content_service.get_research_content_if_exists(research_content_external_id);
         if (!research_content_opt.valid())
@@ -57,7 +56,7 @@ public:
         const research_content_object& research_content = *research_content_opt;
 
         const auto& research = research_service.get_research(research_content.research_id);
-        const auto& research_group = research_groups_service.get_research_group(research.research_group);
+        const auto& research_group = account_service.get_account(research.research_group);
 
         const auto& research_group_api = app::research_group_api_obj(research_group);
         const auto& research_api = app::research_api_obj(research, {}, research_group_api);
@@ -219,7 +218,7 @@ public:
         const auto& db = _app.chain_database();
         const auto& research_hist_idx = db->get_index<research_eci_history_index>().indices().get<by_research_and_cursor>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
-        const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
+        const auto& account_service = db->obtain_service<chain::dbs_account>();
 
         const auto& research_opt = research_service.get_research_if_exists(research_external_id);
         if (!research_opt.valid())
@@ -229,7 +228,7 @@ public:
 
         const research_object& research = *research_opt;
 
-        const auto& research_group = research_groups_service.get_research_group(research.research_group);
+        const auto& research_group = account_service.get_account(research.research_group);
         const auto& research_group_api = app::research_group_api_obj(research_group);
         const auto& research_api = app::research_api_obj(research, {}, research_group);
 
@@ -930,9 +929,9 @@ private:
         const auto& db = _app.chain_database();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
-        const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
         const auto& reviews_service = db->obtain_service<chain::dbs_review>();
         const auto& review_votes_service = db->obtain_service<chain::dbs_review_vote>();
+        const auto& account_service = db->obtain_service<chain::dbs_account>();
 
         const expertise_contribution_type& contribution_type = static_cast<expertise_contribution_type>(type);
 
@@ -944,7 +943,7 @@ private:
                 research_content_api_opt = app::research_content_api_obj(research_content);
 
                 const auto& research = research_service.get_research(research_content.research_id);
-                const auto& research_group = research_groups_service.get_research_group(research.research_group);
+                const auto& research_group = account_service.get_account(research.research_group);
 
                 research_api_opt = app::research_api_obj(research, {}, research_group);
                 research_group_api_opt = app::research_group_api_obj(research_group);
@@ -961,7 +960,7 @@ private:
                 research_content_api_opt = app::research_content_api_obj(research_content);
                 
                 const auto& research = research_service.get_research(research_content.research_id);
-                const auto& research_group = research_groups_service.get_research_group(research.research_group);
+                const auto& research_group = account_service.get_account(research.research_group);
 
                 research_api_opt = app::research_api_obj(research, {}, research_group);
                 research_group_api_opt = app::research_group_api_obj(research_group);
@@ -981,7 +980,7 @@ private:
                 research_content_api_opt = app::research_content_api_obj(research_content);
 
                 const auto& research = research_service.get_research(research_content.research_id);
-                const auto& research_group = research_groups_service.get_research_group(research.research_group);
+                const auto& research_group = account_service.get_account(research.research_group);
 
                 research_api_opt = app::research_api_obj(research, {}, research_group);
                 research_group_api_opt = app::research_group_api_obj(research_group);

@@ -28,7 +28,6 @@ add_library( deip_chain
         services/dbs_witness.cpp
         services/dbs_discipline_supply.cpp
         services/dbs_proposal.cpp
-        services/dbs_research_group.cpp
         services/dbs_discipline.cpp
         services/dbs_review_vote.cpp
         services/dbs_expertise_contribution.cpp
@@ -36,7 +35,6 @@ add_library( deip_chain
         services/dbs_research_discipline_relation.cpp
         services/dbs_research_content.cpp
         services/dbs_expert_token.cpp
-        services/dbs_research_token.cpp
         services/dbs_research_token_sale.cpp
         services/dbs_dynamic_global_properties.cpp
         services/dbs_review.cpp

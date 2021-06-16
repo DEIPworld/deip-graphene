@@ -4,7 +4,6 @@
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_research.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -18,11 +17,11 @@ dbs_funding_opportunity::dbs_funding_opportunity(database &db)
 {
 }
 
-const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_officer_evaluation_distribution(const research_group_id_type& organization_id,
+const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_officer_evaluation_distribution(const account_id_type& organization_id,
                                                                                                              const external_id_type& organization_external_id,
-                                                                                                             const research_group_id_type& review_committee_id,
+                                                                                                             const account_id_type& review_committee_id,
                                                                                                              const external_id_type& review_committee_external_id,
-                                                                                                             const research_group_id_type& treasury_id,
+                                                                                                             const account_id_type& treasury_id,
                                                                                                              const external_id_type& treasury_external_id,
                                                                                                              const account_name_type& grantor,
                                                                                                              const external_id_type& funding_opportunity_number,
@@ -89,7 +88,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_eci
                                                                                                          const std::set<discipline_id_type>& target_disciplines,
                                                                                                          const external_id_type& funding_opportunity_number,
                                                                                                          const flat_map<string, string>& additional_info,
-                                                                                                         const research_group_id_type& review_committee_id,
+                                                                                                         const account_id_type& review_committee_id,
                                                                                                          const external_id_type& review_committee_external_id,
                                                                                                          const uint16_t& min_number_of_positive_reviews,
                                                                                                          const uint16_t& min_number_of_applications,
@@ -245,7 +244,7 @@ dbs_funding_opportunity::funding_opportunity_refs_type dbs_funding_opportunity::
     return ret;
 }
 
-dbs_funding_opportunity::funding_opportunity_refs_type dbs_funding_opportunity::get_funding_opportunity_announcements_by_organization(const research_group_id_type& organization_id) const
+dbs_funding_opportunity::funding_opportunity_refs_type dbs_funding_opportunity::get_funding_opportunity_announcements_by_organization(const account_id_type& organization_id) const
 {
     funding_opportunity_refs_type ret;
     const auto& idx = db_impl()
@@ -312,8 +311,8 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
     dbs_award& award_service = db_impl().obtain_service<dbs_award>();
     dbs_grant_application& grant_application_service = db_impl().obtain_service<dbs_grant_application>();
     dbs_research_discipline_relation& rdr_service = db_impl().obtain_service<dbs_research_discipline_relation>();
-    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
 
     auto& dgpo = db_impl().get_dynamic_global_properties();
 
@@ -344,14 +343,14 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
 
         award_id_type max_award_id;
         award_recipient_id_type max_award_recipient_id;
-        research_group_id_type research_group_with_max_award_id;
+        account_id_type research_group_with_max_award_id;
         share_type max_eci = 0;
 
         for (auto& research_eci : max_number_of_research_to_grant)
         {
             asset research_reward = util::calculate_share(funding_opportunity.amount, research_eci.first, total_eci);
             auto& research = db_impl().get<research_object>(research_eci.second);
-            auto& research_group = research_group_service.get_research_group(research.research_group);
+            auto& research_group = account_service.get_account(research.research_group);
 
             string award_number(funding_opportunity.funding_opportunity_number);
             award_number.append(research.external_id);
@@ -359,9 +358,9 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
 
             auto& award = award_service.create_award(funding_opportunity.funding_opportunity_number,
                                                      external_id_type((string)fc::ripemd160::hash(award_number)),
-                                                     research_group.account,
+                                                     research_group.name,
                                                      research_reward,
-                                                     research_group_id_type(research.research_group_id._id),
+                                                     account_id_type(research.research_group_id._id),
                                                      research.research_group,
                                                      percent(0),
                                                      account_name_type(),
@@ -369,13 +368,13 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
 
             string subaward_number(funding_opportunity.funding_opportunity_number);
             subaward_number.append(research.external_id);
-            subaward_number.append(research_group.account);
+            subaward_number.append(research_group.name);
             subaward_number.append(fc::to_string(dgpo.head_block_number));
 
             auto& award_recipient = award_service.create_award_recipient(external_id_type((string)fc::ripemd160::hash(award_number)),
                                                                          external_id_type((string)fc::ripemd160::hash(subaward_number)),
                                                                          funding_opportunity.funding_opportunity_number,
-                                                                         research_group.account,
+                                                                         research_group.name,
                                                                          account_name_type(),
                                                                          research_reward,
                                                                          research.id._id,
@@ -385,11 +384,11 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
             if (research_eci.first > max_eci) {
                 max_award_id = award.id;
                 max_award_recipient_id = award_recipient.id;
-                research_group_with_max_award_id = research_group_id_type(research.research_group_id._id);
+                research_group_with_max_award_id = account_id_type(research.research_group_id._id);
                 max_eci = research_eci.first;
             }
 
-            account_balance_service.adjust_account_balance(research_group.account, research_reward);
+            account_balance_service.adjust_account_balance(research_group.name, research_reward);
             award_service.adjust_expenses(award_recipient.id._id, research_reward);
 
             used_funding_opportunity += research_reward;
@@ -405,8 +404,8 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
             const auto& award = award_service.get_award(max_award_id);
             const auto& award_recipient = award_service.get_award_recipient(max_award_recipient_id);
 
-            const auto& research_group = research_group_service.get_research_group(research_group_with_max_award_id);
-            account_balance_service.adjust_account_balance(research_group.account, remainder);
+            const auto& research_group = account_service.get_account(research_group_with_max_award_id);
+            account_balance_service.adjust_account_balance(research_group.name, remainder);
 
             db_impl().modify(award, [&](award_object& a_o) {
                 a_o.amount += remainder;

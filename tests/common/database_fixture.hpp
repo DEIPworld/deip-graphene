@@ -11,8 +11,6 @@
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
 
@@ -105,32 +103,12 @@ struct database_fixture
                                                 const std::string& name,
                                                 const discipline_id_type& parent_id);
 
-    const research_group_object& research_group_create(const int64_t& id,
-                                                       const string& name,
-                                                       const string& desciption,
-                                                       const share_type funds,
-                                                       const bool is_dao,
-                                                       const bool is_personal);
-
-    const research_group_object& setup_research_group(const int64_t& id,
-                                                      const string& name,
-                                                      const string& desciption,
-                                                      const share_type funds,
-                                                      const bool is_dao,
-                                                      const bool is_personal,
-                                                      const vector<std::pair<account_name_type, share_type>>& accounts);
-
     void create_disciplines();
 
     const research_object& research_create(const int64_t id,
                                            const string& title,
                                            const string& abstract,
-                                           const research_group_id_type& research_group_id);
-
-    const research_token_object& research_token_create(const int64_t id, 
-                                                       const account_name_type& owner,
-                                                       const uint16_t amount,
-                                                       const int64_t research_id);
+                                           const account_id_type& research_group_id);
 
 
     const research_content_object& research_content_create(

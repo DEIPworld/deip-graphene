@@ -61,9 +61,7 @@ enum object_type
     research_content_object_type,
     proposal_object_type,
     recent_entity_object_type,
-    research_group_object_type,
     expert_token_object_type,
-    research_token_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
     review_object_type,
@@ -108,14 +106,12 @@ class reward_fund_object;
 class discipline_supply_object;
 class proposal_object;
 class recent_entity_object;
-class research_group_object;
 class discipline_object;
 class expertise_contribution_object;
 class research_object;
 class research_discipline_relation_object;
 class research_content_object;
 class expert_token_object;
-class research_token_object;
 class research_token_sale_object;
 class research_token_sale_contribution_object;
 class review_object;
@@ -159,14 +155,12 @@ typedef oid<reward_fund_object> reward_fund_id_type;
 typedef oid<discipline_supply_object> discipline_supply_id_type;
 typedef oid<proposal_object> proposal_id_type;
 typedef oid<recent_entity_object> recent_entity_id_type;
-typedef oid<research_group_object> research_group_id_type;
 typedef oid<discipline_object> discipline_id_type;
 typedef oid<expertise_contribution_object> expertise_contribution_id_type;
 typedef oid<research_object> research_id_type;
 typedef oid<research_discipline_relation_object> research_discipline_relation_id_type;
 typedef oid<research_content_object> research_content_id_type;
 typedef oid<expert_token_object> expert_token_id_type;
-typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
 typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
 typedef oid<review_object> review_id_type;
@@ -233,7 +227,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (discipline_supply_object_type)
                  (proposal_object_type)
                  (recent_entity_object_type)
-                 (research_group_object_type)
                  (discipline_object_type)
                  (vote_object_type)
                  (expertise_contribution_object_type)
@@ -241,7 +234,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_discipline_relation_object_type)
                  (research_content_object_type)
                  (expert_token_object_type)
-                 (research_token_object_type)
                  (research_token_sale_object_type)
                  (research_token_sale_contribution_object_type)
                  (review_object_type)

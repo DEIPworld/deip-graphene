@@ -33,7 +33,7 @@ public:
                                      const external_id_type& award_number,
                                      const account_name_type& awardee,
                                      const asset& amount,
-                                     const research_group_id_type& university_id,
+                                     const account_id_type& university_id,
                                      const external_id_type& university_external_id,
                                      const percent& university_overhead,
                                      const account_name_type& creator,

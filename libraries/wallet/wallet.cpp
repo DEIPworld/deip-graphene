@@ -2107,28 +2107,6 @@ vector<discipline_supply_api_obj> wallet_api::get_discipline_supplies(const std:
     return result;
 }
 
-
-vector<research_token_api_obj> wallet_api::list_my_research_tokens()
-{
-    vector<account_api_obj> accounts = list_my_accounts();
-
-    vector<research_token_api_obj> result;
-
-    for (const auto& account : accounts)
-    {
-        vector<research_token_api_obj> research_tokens
-            = my->_remote_db->get_research_tokens_by_account_name(account.name);
-        result.insert(result.end(), research_tokens.begin(), research_tokens.end());
-    }
-
-    return result;
-}
-
-vector<research_token_api_obj> wallet_api::list_account_research_tokens(const std::string& account_name)
-{
-    return my->_remote_db->get_research_tokens_by_account_name(account_name);
-}
-
 vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::string& account_name)
 {
     vector<vesting_balance_api_obj> result;
