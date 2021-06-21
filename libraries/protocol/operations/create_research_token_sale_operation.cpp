@@ -32,8 +32,8 @@ void create_research_token_sale_operation::validate() const
       "Assets does not match. Soft cap: ${1}. Hard cap: ${2}.",
       ("1", soft_cap)("2", hard_cap));
 
-    FC_ASSERT(hard_cap > soft_cap,
-      "Hard cap should be greater than soft cap. Hard cap: ${1}. Soft cap: ${2}.",
+    FC_ASSERT(hard_cap >= soft_cap,
+      "Hard cap should be greater or equal to soft cap. Hard cap: ${1}. Soft cap: ${2}.",
       ("1", hard_cap)("2", soft_cap));
 
     FC_ASSERT(end_time > start_time,

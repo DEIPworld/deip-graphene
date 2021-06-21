@@ -53,15 +53,8 @@ struct asset
     }
     friend bool operator<(const asset& a, const asset& b)
     {
-        // FC_ASSERT(a.symbol == b.symbol); 
-        if (a.symbol != b.symbol) 
-        {
-            return a.symbol < b.symbol; // allow to use in set/flat_set
-        }
-        else
-        {
-            return std::tie(a.amount, a.symbol) < std::tie(b.amount, b.symbol);
-        }
+        // FC_ASSERT(a.symbol == b.symbol); // allow to use in set/flat_set
+        return std::tie(a.amount, a.symbol) < std::tie(b.amount, b.symbol);
     }
     friend bool operator<=(const asset& a, const asset& b)
     {
