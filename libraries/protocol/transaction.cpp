@@ -39,7 +39,7 @@ void transaction::validate() const
     for (const auto& op : operations)
     {
         operation_validate(op);
-        entity_validate(op, ref_block_num, ref_block_prefix);
+        // entity_validate(op, ref_block_num, ref_block_prefix);
     }
 }
 
