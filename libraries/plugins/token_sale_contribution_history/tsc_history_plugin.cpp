@@ -58,21 +58,28 @@ class tsc_operation_visitor
     const tsc_operation_object& _obj;
     const account_name_type& _contributor;
     const int64_t& _research_id;
+    const external_id_type& _research_external_id;
     const int64_t& _research_token_sale_id;
+    const external_id_type& _research_token_sale_external_id;
     const asset& _amount;
 
 public:
     using result_type = void;
-    tsc_operation_visitor(database& db, const tsc_operation_object& obj,
-                                        const account_name_type& contributor,
-                                        const int64_t& research_id,
-                                        const int64_t& research_token_sale_id,
-                                        const asset& amount)
+    tsc_operation_visitor(database& db,
+                          const tsc_operation_object& obj,
+                          const account_name_type& contributor,
+                          const int64_t& research_id,
+                          const external_id_type& research_external_id,
+                          const int64_t& research_token_sale_id,
+                          const external_id_type& research_token_sale_external_id,
+                          const asset& amount)
         : _db(db)
         , _obj(obj)
         , _contributor(contributor)
         , _research_id(research_id)
+        , _research_external_id(research_external_id)
         , _research_token_sale_id(research_token_sale_id)
+        , _research_token_sale_external_id(research_token_sale_external_id)
         , _amount(amount)
     {
     }
@@ -95,7 +102,9 @@ private:
             tsc_hist.op = op.id;
             tsc_hist.contributor = _contributor;
             tsc_hist.research_id = _research_id;
+            tsc_hist.research_external_id = _research_external_id;
             tsc_hist.research_token_sale_id = _research_token_sale_id;
+            tsc_hist.research_token_sale_external_id = _research_token_sale_external_id;
             tsc_hist.amount = _amount;
         });
     }
@@ -126,10 +135,13 @@ void tsc_history_plugin_impl::on_operation(const operation_notification& note)
         token_sale_contribution_to_history_operation op = note.op.get<token_sale_contribution_to_history_operation>();
         account_name_type contributor = op.contributor;
         int64_t research_id = op.research_id;
+        external_id_type research_external_id = op.research_external_id;
         int64_t research_token_sale_id = op.research_token_sale_id;
+        external_id_type research_token_sale_external_id = op.research_token_sale_external_id;
         asset amount = op.amount;
 
-        note.op.visit(tsc_operation_visitor(db, new_obj, contributor, research_id, research_token_sale_id, amount));
+        note.op.visit(tsc_operation_visitor(db, new_obj, contributor, research_id, research_external_id,
+                                            research_token_sale_id, research_token_sale_external_id, amount));
     }
 }
 

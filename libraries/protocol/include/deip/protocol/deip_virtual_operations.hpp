@@ -65,16 +65,25 @@ struct producer_reward_operation : public virtual_operation
 struct token_sale_contribution_to_history_operation : public virtual_operation
 {
     token_sale_contribution_to_history_operation() {}
-    token_sale_contribution_to_history_operation(const int64_t& research_id, const int64_t& research_token_sale_id, const string& contributor, const asset& amount)
+    token_sale_contribution_to_history_operation(const int64_t& research_id,
+                                                 const external_id_type& research_external_id,
+                                                 const int64_t& research_token_sale_id,
+                                                 const external_id_type& research_token_sale_external_id,
+                                                 const string& contributor,
+                                                 const asset& amount)
         : research_id(research_id)
+        , research_external_id(research_external_id)
         , research_token_sale_id(research_token_sale_id)
+        , research_token_sale_external_id(research_token_sale_external_id)
         , contributor(contributor)
         , amount(amount)
     {
     }
 
     int64_t research_id;
+    external_id_type research_external_id;
     int64_t research_token_sale_id;
+    external_id_type research_token_sale_external_id;
     account_name_type contributor;
     asset amount;
 };
@@ -297,7 +306,7 @@ FC_REFLECT(deip::protocol::fill_common_tokens_withdraw_operation, (from_account)
 FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
-FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_token_sale_id)(contributor)(amount))
+FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_external_id)(research_token_sale_id)(research_token_sale_external_id)(contributor)(amount))
 FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_content_external_id)(research_id)(research_external_id)(content)(research_content_reference_id)(research_content_reference_external_id)(research_reference_id)(research_reference_external_id)(content_reference))
 FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))

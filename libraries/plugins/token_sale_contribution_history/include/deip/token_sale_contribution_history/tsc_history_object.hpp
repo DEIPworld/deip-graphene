@@ -16,15 +16,21 @@ template <uint16_t TSCHistoryType> struct tsc_history_object : public object<TSC
 
     account_name_type contributor;
     research_id_type research_id;
+    protocol::external_id_type research_external_id;
     research_token_sale_id_type research_token_sale_id;
+    protocol::external_id_type research_token_sale_external_id;
     protocol::asset amount;
     tsc_operation_object::id_type op;
 };
 
 struct by_account_and_research;
+struct by_account_and_research_external_id;
 struct by_account;
 struct by_research;
 struct by_token_sale;
+
+struct by_research_external_id;
+struct by_token_sale_external_id;
 
 template <typename tsc_history_object_t>
 using tsc_history_index
@@ -37,18 +43,34 @@ using tsc_history_index
                                                               member<tsc_history_object_t,
                                                                     research_id_type,
                                                                     &tsc_history_object_t::research_id>>,
+                                              ordered_non_unique<tag<by_research_external_id>,
+                                                              member<tsc_history_object_t,
+                                                                    protocol::external_id_type,
+                                                                    &tsc_history_object_t::research_external_id>>,
                                               ordered_non_unique<tag<by_token_sale>,
                                                               member<tsc_history_object_t,
                                                                     research_token_sale_id_type,
                                                                     &tsc_history_object_t::research_token_sale_id>>,
+                                              ordered_non_unique<tag<by_token_sale_external_id>,
+                                                              member<tsc_history_object_t,
+                                                                    protocol::external_id_type,
+                                                                    &tsc_history_object_t::research_token_sale_external_id>>,
                                               ordered_non_unique<tag<by_account_and_research>,
-                                              composite_key<tsc_history_object_t,
+                                                  composite_key<tsc_history_object_t,
                                                               member<tsc_history_object_t,
                                                                     account_name_type,
                                                                     &tsc_history_object_t::contributor>,
                                                               member<tsc_history_object_t,
                                                                      research_id_type,
                                                                     &tsc_history_object_t::research_id>>>,
+                                              ordered_non_unique<tag<by_account_and_research_external_id>,
+                                                  composite_key<tsc_history_object_t,
+                                                              member<tsc_history_object_t,
+                                                                    account_name_type,
+                                                                    &tsc_history_object_t::contributor>,
+                                                              member<tsc_history_object_t,
+                                                                     protocol::external_id_type,
+                                                                    &tsc_history_object_t::research_external_id>>>,
                                               ordered_non_unique<tag<by_account>,
                                                               member<tsc_history_object_t,
                                                                      account_name_type,
@@ -64,8 +86,8 @@ using contribute_to_token_sale_history_index = tsc_history_index<contribute_to_t
 } // namespace tsc_history
 } // namespace deip
 
-FC_REFLECT(deip::tsc_history::all_tsc_operations_history_object, (id)(contributor)(research_id)(research_token_sale_id)(amount)(op))
-FC_REFLECT(deip::tsc_history::contribute_to_token_sale_history_object, (id)(contributor)(research_id)(research_token_sale_id)(amount)(op))
+FC_REFLECT(deip::tsc_history::all_tsc_operations_history_object, (id)(contributor)(research_id)(research_external_id)(research_token_sale_id)(research_token_sale_external_id)(amount)(op))
+FC_REFLECT(deip::tsc_history::contribute_to_token_sale_history_object, (id)(contributor)(research_id)(research_external_id)(research_token_sale_id)(research_token_sale_external_id)(amount)(op))
 
 
 CHAINBASE_SET_INDEX_TYPE(deip::tsc_history::all_tsc_operations_history_object,
