@@ -42,13 +42,16 @@ public:
     }
 
     template <typename history_object_type>
-    std::vector<applied_tsc_operation> get_contributions_history_by_contributor_and_research(const account_name_type& contributor, const research_id_type& research_id) const
+    std::vector<applied_tsc_operation> get_contributions_history_by_contributor_and_research(const account_name_type& contributor, const protocol::external_id_type& research_external_id) const
     {
         std::vector<applied_tsc_operation> result;
 
         const auto db = _app.chain_database();
 
-        const auto& idx = db->get_index<tsc_operations_full_history_index>().indices().get<by_account_and_research>().equal_range(std::make_tuple(contributor, research_id));
+        const auto& idx = db->get_index<tsc_operations_full_history_index>()
+                              .indices()
+                              .get<by_account_and_research_external_id>()
+                              .equal_range(std::make_tuple(contributor, research_external_id));
 
         auto it = idx.first;
         const auto it_end = idx.second;
@@ -62,13 +65,14 @@ public:
     }
 
     template <typename history_object_type>
-    std::vector<applied_tsc_operation> get_contributions_history_by_research(const research_id_type& research_id) const
+    std::vector<applied_tsc_operation>
+    get_contributions_history_by_research(const protocol::external_id_type& research_external_id) const
     {
         std::vector<applied_tsc_operation> result;
 
         const auto db = _app.chain_database();
 
-        const auto& idx = db->get_index<tsc_operations_full_history_index>().indices().get<by_research>().equal_range(research_id);
+        const auto& idx = db->get_index<tsc_operations_full_history_index>().indices().get<by_research_external_id>().equal_range(research_external_id);
 
         auto it = idx.first;
         const auto it_end = idx.second;
@@ -83,13 +87,14 @@ public:
 
 
     template <typename history_object_type>
-    std::vector<applied_tsc_operation> get_contributions_history_by_token_sale(const research_token_sale_id_type& research_token_sale_id) const
+    std::vector<applied_tsc_operation> get_contributions_history_by_token_sale(const protocol::external_id_type& research_token_sale_external_id) const
     {
         std::vector<applied_tsc_operation> result;
 
         const auto db = _app.chain_database();
 
-        const auto& idx = db->get_index<tsc_operations_full_history_index>().indices().get<by_token_sale>().equal_range(research_token_sale_id);
+        const auto& idx
+            = db->get_index<tsc_operations_full_history_index>().indices().get<by_token_sale_external_id>().equal_range(research_token_sale_external_id);
 
         auto it = idx.first;
         const auto it_end = idx.second;
@@ -126,30 +131,29 @@ tsc_history_api::get_contributions_history_by_contributor(const account_name_typ
 }
 
 std::vector<applied_tsc_operation>
-tsc_history_api::get_contributions_history_by_contributor_and_research(const account_name_type& contributor, const research_id_type& research_id) const
+tsc_history_api::get_contributions_history_by_contributor_and_research(const account_name_type& contributor, const protocol::external_id_type& research_external_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
-        return _impl->get_contributions_history_by_contributor_and_research<all_tsc_operations_history_object>(contributor, research_id);
+        return _impl->get_contributions_history_by_contributor_and_research<all_tsc_operations_history_object>(contributor, research_external_id);
     });
 }
 
-
 std::vector<applied_tsc_operation>
-tsc_history_api::get_contributions_history_by_research(const research_id_type& research_id) const
+tsc_history_api::get_contributions_history_by_research(const protocol::external_id_type& research_external_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
-        return _impl->get_contributions_history_by_research<all_tsc_operations_history_object>(research_id);
+        return _impl->get_contributions_history_by_research<all_tsc_operations_history_object>(research_external_id);
     });
 }
 
 std::vector<applied_tsc_operation> 
-tsc_history_api::get_contributions_history_by_token_sale(const research_token_sale_id_type& research_token_sale_id) const
+tsc_history_api::get_contributions_history_by_token_sale(const protocol::external_id_type& research_token_sale_external_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
-        return _impl->get_contributions_history_by_token_sale<all_tsc_operations_history_object>(research_token_sale_id);
+        return _impl->get_contributions_history_by_token_sale<all_tsc_operations_history_object>(research_token_sale_external_id);
     });
 }
 

@@ -1045,7 +1045,9 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
 
     _db.push_virtual_operation(token_sale_contribution_to_history_operation(
       research_token_sale.research_id._id,
+      research.external_id,
       research_token_sale.id._id,
+      research_token_sale.external_id,
       op.contributor,
       amount_to_contribute
     ));
