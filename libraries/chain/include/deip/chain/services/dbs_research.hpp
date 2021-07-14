@@ -37,8 +37,6 @@ public:
                                            const bool& is_private,
                                            const flat_set<deip::protocol::update_research_extension>& update_extensions);
 
-    const research_object& create_default_research(const account_name_type& account);
-
     const research_refs_type get_researches_by_research_group(const account_name_type& research_group) const;
 
     const research_object& get_research(const research_id_type& id) const;

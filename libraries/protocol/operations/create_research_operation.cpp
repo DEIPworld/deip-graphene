@@ -12,7 +12,6 @@ void create_research_operation::validate() const
     validate_account_name(account);
     validate_160_bits_hexadecimal_string(external_id);
 
-    FC_ASSERT(disciplines.size() != 0, "Research must be related to one or several disciplines.");
     for (const auto& external_id : disciplines)
     {
         validate_160_bits_hexadecimal_string(external_id);

@@ -49,34 +49,6 @@ const research_object& dbs_research::create_research(const account_object& accou
     return research;
 }
 
-const research_object& dbs_research::create_default_research(const account_name_type& account)
-{
-    dbs_research& research_service = db_impl().obtain_service<dbs_research>();
-    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
-    const auto& block_time = db_impl().head_block_time();
-
-    const string external_id_str(account);
-    const external_id_type external_id((string)fc::ripemd160::hash(external_id_str));
-    const string description(account);
-    const std::set<discipline_id_type>& disciplines = std::set<discipline_id_type>({});
-    const bool& is_private = false;
-    const bool& is_finished = false;
-    const bool& is_default = true;
-
-    const auto& team = account_service.get_account(account);
-    const auto& default_research = research_service.create_research(
-      team,
-      external_id,
-      description,
-      disciplines,
-      is_private,
-      is_finished,
-      is_default,
-      block_time
-    );
-
-    return default_research;
-}
 
 const research_object& dbs_research::update_research(const research_object& research,
                                                      const string& description,

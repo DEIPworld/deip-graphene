@@ -153,8 +153,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         }
     });
 
-    research_service.create_default_research(account_name);
-
     const auto& default_assets = asset_service.get_default_assets();
     for (const asset_object& default_asset : default_assets)
     {
