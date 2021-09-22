@@ -2370,5 +2370,38 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
     }
 }
 
+void create_contract_agreement_evaluator::do_apply(const create_contract_agreement_operation& op)
+{
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
+    auto& research_service = _db.obtain_service<dbs_research>();
+    auto& asset_service = _db.obtain_service<dbs_asset>();
+    auto& research_license_service = _db.obtain_service<dbs_research_license>();
+    auto& account_service = _db.obtain_service<dbs_account>();
+    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
+
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
+
+    FC_ASSERT(account_service.account_exists(op.creator), "Account ${1} does not exist", ("1", op.creator));
+    for (const auto& party: op.parties)
+    {
+        FC_ASSERT(account_service.account_exists(party), "Account ${1} does not exist", ("1", party));
+    }
+
+    const auto block_time = _db.head_block_time();
+    const auto start_time = op.start_time.valid() ? *op.start_time : block_time;
+
+    FC_ASSERT(start_time >= block_time,
+      "Start time ${1} must be later or equal to the current moment ${2}",
+      ("1", start_time)("2", block_time));
+
+    if (op.end_time.valid())
+    {
+        FC_ASSERT(*op.end_time > start_time,
+          "Start time${1} must be less than end time ${2}",
+          ("1", start_time)("2", *op.end_time));
+    }
+}
+
 } // namespace chain
 } // namespace deip
