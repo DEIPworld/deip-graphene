@@ -30,6 +30,7 @@
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/services/dbs_research_license.hpp>
+#include <deip/chain/services/dbs_contract_agreement.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -2373,11 +2374,8 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 void create_contract_agreement_evaluator::do_apply(const create_contract_agreement_operation& op)
 {
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
-    auto& research_service = _db.obtain_service<dbs_research>();
-    auto& asset_service = _db.obtain_service<dbs_asset>();
-    auto& research_license_service = _db.obtain_service<dbs_research_license>();
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    auto& contract_agreement_service = _db.obtain_service<dbs_contract_agreement>();
 
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
@@ -2401,6 +2399,13 @@ void create_contract_agreement_evaluator::do_apply(const create_contract_agreeme
           "Start time${1} must be less than end time ${2}",
           ("1", start_time)("2", *op.end_time));
     }
+
+    contract_agreement_service.create(op.external_id,
+                                      op.creator,
+                                      op.parties,
+                                      op.hash,
+                                      start_time,
+                                      op.end_time);
 }
 
 } // namespace chain
