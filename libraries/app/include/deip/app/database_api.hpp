@@ -455,6 +455,8 @@ public:
     vector<nda_contract_file_access_api_obj> get_nda_contract_content_access_requests_by_nda(const external_id_type& nda_external_id) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_content_access_requests_by_requester(const account_name_type& requester) const;
 
+    // Contract agreements
+    fc::optional<contract_agreement_api_obj> get_contract_agreement(const external_id_type& id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -661,6 +663,8 @@ FC_API(deip::app::database_api,
    (get_nda_contract_content_access_requests_by_nda)
    (get_nda_contract_content_access_requests_by_requester)
 
+   // Contract agreements
+   (get_contract_agreement)
 )
 
 // clang-format on

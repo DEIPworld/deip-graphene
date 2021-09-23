@@ -27,6 +27,7 @@ public:
                                                    const fc::optional<fc::time_point_sec>& end_time);
 
     const bool exists(const external_id_type& external_id) const;
+    const optional_ref_type get_if_exists(const external_id_type& id) const;
 };
 
 } // namespace chain

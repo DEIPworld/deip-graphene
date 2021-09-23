@@ -31,6 +31,7 @@
 #include <deip/chain/schema/funding_opportunity_object.hpp>
 #include <deip/chain/schema/research_license_object.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
+#include <deip/chain/schema/contract_agreement_object.hpp>
 #include <deip/witness/witness_objects.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -1263,6 +1264,34 @@ struct nda_contract_file_access_api_obj
     std::string proof_of_encrypted_payload_encryption_key;
 };
 
+struct contract_agreement_api_obj
+{
+    contract_agreement_api_obj(const chain::contract_agreement_object& c_o)
+        : external_id(c_o.external_id)
+        , creator(c_o.creator)
+        , parties(c_o.parties.begin(), c_o.parties.end())
+        , hash(fc::to_string(c_o.hash))
+        , created_at(c_o.created_at)
+        , start_time(c_o.start_time)
+        , end_time(c_o.end_time)
+    {}
+
+    // because fc::variant require for temporary object
+    contract_agreement_api_obj()
+    {
+    }
+
+    external_id_type external_id;
+    account_name_type creator;
+    flat_map<account_name_type, acceptance_status> parties;
+
+    std::string hash;
+
+    fc::time_point_sec created_at;
+    fc::time_point_sec start_time;
+    fc::optional<fc::time_point_sec> end_time;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1689,6 +1718,16 @@ FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (encrypted_payload_iv)
             (encrypted_payload_encryption_key)
             (proof_of_encrypted_payload_encryption_key)
+)
+
+FC_REFLECT( deip::app::contract_agreement_api_obj,
+            (external_id)
+            (creator)
+            (parties)
+            (hash)
+            (created_at)
+            (start_time)
+            (end_time)
 )
 
     // clang-format on
