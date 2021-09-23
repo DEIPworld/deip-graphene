@@ -43,6 +43,7 @@
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_research_license.hpp>
+#include <deip/chain/services/dbs_contract_agreement.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1762,6 +1763,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<update_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_assessment_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_license_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_contract_agreement_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1811,6 +1813,7 @@ void database::initialize_indexes()
     add_index<assessment_stage_index>();
     add_index<assessment_stage_phase_index>();
     add_index<research_license_index>();
+    add_index<contract_agreement_index>();
 
     _plugin_index_signal();
 }
