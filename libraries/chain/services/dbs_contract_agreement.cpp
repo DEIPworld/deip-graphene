@@ -51,5 +51,23 @@ const bool dbs_contract_agreement::exists(const external_id_type &external_id) c
     return itr != idx.end();
 }
 
+const dbs_contract_agreement::optional_ref_type dbs_contract_agreement::get_if_exists(const external_id_type& id) const
+{
+    optional_ref_type result;
+
+    const auto& idx = db_impl()
+      .get_index<contract_agreement_index>()
+      .indicies()
+      .get<by_external_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 } //namespace chain
 } //namespace deip
