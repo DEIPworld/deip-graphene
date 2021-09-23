@@ -36,7 +36,7 @@ public:
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
-    fc::time_point_sec end_time;
+    fc::optional<fc::time_point_sec> end_time;
 };
 
 struct by_external_id;
