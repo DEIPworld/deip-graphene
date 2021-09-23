@@ -33,7 +33,7 @@ const contract_agreement_object& dbs_contract_agreement::create(
 
         fc::from_string(c_o.hash, hash);
         c_o.start_time = start_time;
-        c_o.end_time = *end_time;
+        c_o.end_time = end_time;
         c_o.created_at = block_time;
     });
 

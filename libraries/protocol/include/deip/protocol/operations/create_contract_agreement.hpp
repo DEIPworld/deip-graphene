@@ -27,14 +27,6 @@ struct create_contract_agreement_operation: public entity_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(creator);
-
-        for (const auto& party: parties)
-        {
-            if (party != creator)
-            {
-                a.insert(party);
-            }
-        }
     }
 };
 
@@ -45,5 +37,8 @@ FC_REFLECT(deip::protocol::create_contract_agreement_operation,
   (external_id)
   (creator)
   (parties)
+  (hash)
+  (start_time)
+  (end_time)
   (extensions)
 )

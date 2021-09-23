@@ -2505,6 +2505,29 @@ annotated_signed_transaction wallet_api::reserve_asset(const std::string& owner,
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::create_contract_agreement(
+        const std::string& external_id,
+        const std::string& creator,
+        const flat_set<std::string>& parties,
+        const std::string& hash,
+        const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_contract_agreement_operation op;
+
+    op.external_id = external_id;
+    op.creator = creator;
+    op.parties.insert(parties.begin(), parties.end());
+    op.hash = hash;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 fc::ecc::private_key derive_private_key(const std::string& prefix_string, int sequence_number)
