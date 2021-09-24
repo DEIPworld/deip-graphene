@@ -69,6 +69,28 @@ const dbs_contract_agreement::optional_ref_type dbs_contract_agreement::get_if_e
     return result;
 }
 
+const dbs_contract_agreement::refs_type dbs_contract_agreement::get_by_creator(
+        const account_name_type& creator) const
+{
+    refs_type ret;
+
+    auto it_pair = db_impl()
+      .get_index<contract_agreement_index>()
+      .indicies()
+      .get<by_creator>()
+      .equal_range(creator);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 const contract_agreement_object& dbs_contract_agreement::accept_by(
         const contract_agreement_object& contract,
         const account_name_type& party)

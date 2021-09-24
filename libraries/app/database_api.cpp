@@ -222,6 +222,7 @@ public:
 
     // Contract agreements
     fc::optional<contract_agreement_api_obj> get_contract_agreement(const external_id_type& id) const;
+    vector<contract_agreement_api_obj> get_contract_agreement_by_creator(const account_name_type& creator) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -2986,6 +2987,30 @@ fc::optional<contract_agreement_api_obj> database_api_impl::get_contract_agreeme
     }
 
     return result;
+}
+
+vector<contract_agreement_api_obj> database_api::get_contract_agreement_by_creator(
+        const account_name_type& creator) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_contract_agreement_by_creator(creator);
+    });
+}
+
+vector<contract_agreement_api_obj> database_api_impl::get_contract_agreement_by_creator(
+        const account_name_type& creator) const
+{
+    const auto& service = _db.obtain_service<chain::dbs_contract_agreement>();
+
+    vector<contract_agreement_api_obj> results;
+    const auto& contracts = service.get_by_creator(creator);
+    for (auto& wrap : contracts)
+    {
+        const auto& contract = wrap.get();
+        results.push_back(contract);
+    }
+
+    return results;
 }
 
 } // namespace app
