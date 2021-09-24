@@ -69,5 +69,16 @@ const dbs_contract_agreement::optional_ref_type dbs_contract_agreement::get_if_e
     return result;
 }
 
+const contract_agreement_object& dbs_contract_agreement::accept_by(
+        const contract_agreement_object& contract,
+        const account_name_type& party)
+{
+    db_impl().modify(contract, [&](contract_agreement_object& o) {
+        o.parties[party] = acceptance_status::Accepted;
+    });
+
+    return contract;
+}
+
 } //namespace chain
 } //namespace deip

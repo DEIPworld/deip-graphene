@@ -63,6 +63,7 @@ DEFINE_EVALUATOR(update_research)
 DEFINE_EVALUATOR(create_assessment)
 DEFINE_EVALUATOR(create_research_license)
 DEFINE_EVALUATOR(create_contract_agreement)
+DEFINE_EVALUATOR(accept_contract_agreement)
 
 }
 } // deip::chain
