@@ -38,6 +38,7 @@
 #include <deip/protocol/operations/create_asset_operation.hpp>
 #include <deip/protocol/operations/issue_asset_operation.hpp>
 #include <deip/protocol/operations/reserve_asset_operation.hpp>
+#include <deip/protocol/operations/create_contract_agreement.hpp>
 
 namespace deip {
 namespace protocol {
