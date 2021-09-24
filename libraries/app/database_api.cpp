@@ -39,6 +39,7 @@
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/services/dbs_research_license.hpp>
+#include <deip/chain/services/dbs_contract_agreement.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -218,6 +219,10 @@ public:
     fc::optional<nda_contract_file_access_api_obj> get_nda_contract_content_access_request(const external_id_type& external_id) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_content_access_requests_by_nda(const external_id_type& nda_external_id) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_content_access_requests_by_requester(const account_name_type& requester) const;
+
+    // Contract agreements
+    fc::optional<contract_agreement_api_obj> get_contract_agreement(const external_id_type& id) const;
+    vector<contract_agreement_api_obj> get_contract_agreement_by_creator(const account_name_type& creator) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -2957,6 +2962,52 @@ database_api_impl::get_nda_contract_content_access_requests_by_requester(const a
     {
         const auto& request = wrap.get();
         results.push_back(request);
+    }
+
+    return results;
+}
+
+fc::optional<contract_agreement_api_obj> database_api::get_contract_agreement(const external_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_contract_agreement(id);
+    });
+}
+
+fc::optional<contract_agreement_api_obj> database_api_impl::get_contract_agreement(const external_id_type& id) const
+{
+    const auto& service = _db.obtain_service<chain::dbs_contract_agreement>();
+
+    fc::optional<contract_agreement_api_obj> result;
+    const auto& opt = service.get_if_exists(id);
+
+    if (opt.valid())
+    {
+        result = contract_agreement_api_obj(*opt);
+    }
+
+    return result;
+}
+
+vector<contract_agreement_api_obj> database_api::get_contract_agreement_by_creator(
+        const account_name_type& creator) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_contract_agreement_by_creator(creator);
+    });
+}
+
+vector<contract_agreement_api_obj> database_api_impl::get_contract_agreement_by_creator(
+        const account_name_type& creator) const
+{
+    const auto& service = _db.obtain_service<chain::dbs_contract_agreement>();
+
+    vector<contract_agreement_api_obj> results;
+    const auto& contracts = service.get_by_creator(creator);
+    for (auto& wrap : contracts)
+    {
+        const auto& contract = wrap.get();
+        results.push_back(contract);
     }
 
     return results;

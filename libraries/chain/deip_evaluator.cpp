@@ -30,6 +30,7 @@
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/services/dbs_research_license.hpp>
+#include <deip/chain/services/dbs_contract_agreement.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -2368,6 +2369,78 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
     {
         FC_ASSERT(false, "Unknown research license type");
     }
+}
+
+void create_contract_agreement_evaluator::do_apply(const create_contract_agreement_operation& op)
+{
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
+    auto& account_service = _db.obtain_service<dbs_account>();
+    auto& contract_agreement_service = _db.obtain_service<dbs_contract_agreement>();
+
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
+
+    FC_ASSERT(account_service.account_exists(op.creator), "Account ${1} does not exist", ("1", op.creator));
+    for (const auto& party: op.parties)
+    {
+        FC_ASSERT(account_service.account_exists(party), "Account ${1} does not exist", ("1", party));
+    }
+
+    const auto block_time = _db.head_block_time();
+    const auto start_time = op.start_time.valid() ? *op.start_time : block_time;
+
+    FC_ASSERT(start_time >= block_time,
+      "Start time ${1} must be later or equal to the current moment ${2}",
+      ("1", start_time)("2", block_time));
+
+    if (op.end_time.valid())
+    {
+        FC_ASSERT(*op.end_time > start_time,
+          "Start time${1} must be less than end time ${2}",
+          ("1", start_time)("2", *op.end_time));
+    }
+
+    contract_agreement_service.create(op.external_id,
+                                      op.creator,
+                                      op.parties,
+                                      op.hash,
+                                      start_time,
+                                      op.end_time);
+}
+
+void accept_contract_agreement_evaluator::do_apply(const accept_contract_agreement_operation& op)
+{
+    auto& account_service = _db.obtain_service<dbs_account>();
+    auto& contract_agreement_service = _db.obtain_service<dbs_contract_agreement>();
+
+    FC_ASSERT(account_service.account_exists(op.party), "Account ${1} does not exist", ("1", op.party));
+
+    const auto& contract_opt_ref = contract_agreement_service.get_if_exists(op.external_id);
+    FC_ASSERT(contract_opt_ref.valid(), "Contract agreement ${1} does not exist", ("1", op.external_id));
+
+    const auto& contract = contract_opt_ref->get();
+    const auto it = contract.parties.find(op.party);
+    FC_ASSERT(it != contract.parties.end(),
+              "Party ${2} is not listed in contract agreement ${1}",
+              ("1", op.external_id)("2", op.party));
+
+    FC_ASSERT(it->second != acceptance_status::Accepted,
+              "Contract agreement ${1} is already accepted by ${2}",
+              ("1", op.external_id)("2", op.party));
+
+    const auto block_time = _db.head_block_time();
+    FC_ASSERT(contract.start_time < block_time,
+              "Contract agreement ${1} is not active. (start_time = ${2}, block_time = ${3}",
+              ("1", op.external_id)("2", contract.start_time)("3", block_time));
+
+    if (contract.end_time.valid())
+    {
+        FC_ASSERT(block_time < *contract.end_time,
+                  "Contract agreement ${1} is expired",
+                  ("1", op.external_id));
+    }
+
+    contract_agreement_service.accept_by(contract, op.party);
 }
 
 } // namespace chain
