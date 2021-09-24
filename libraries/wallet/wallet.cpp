@@ -2528,6 +2528,25 @@ annotated_signed_transaction wallet_api::create_contract_agreement(
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::accept_contract_agreement(
+        const std::string& external_id,
+        const std::string& party,
+        const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    accept_contract_agreement_operation op;
+
+    op.external_id = external_id;
+    op.party = party;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 fc::ecc::private_key derive_private_key(const std::string& prefix_string, int sequence_number)

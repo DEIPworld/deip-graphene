@@ -1011,6 +1011,10 @@ public:
                                                            const std::string& hash,
                                                            const bool broadcast);
 
+    annotated_signed_transaction accept_contract_agreement(const std::string& external_id,
+                                                           const std::string& party,
+                                                           const bool broadcast);
+
     public : fc::signal<void(bool)> lock_changed;
 
 private:
@@ -1125,6 +1129,7 @@ FC_API( deip::wallet::wallet_api,
         (issue_asset)
         (reserve_asset)
         (create_contract_agreement)
+        (accept_contract_agreement)
 
         /// helper api
         (get_prototype_operation)
