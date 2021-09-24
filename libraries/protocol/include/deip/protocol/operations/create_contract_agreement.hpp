@@ -17,6 +17,7 @@ struct create_contract_agreement_operation: public entity_operation
     optional<time_point_sec> start_time;
     optional<time_point_sec> end_time;
 
+    extensions_type terms; // will be populated later
     extensions_type extensions;
 
     string entity_id() const { return "external_id"; }
@@ -40,5 +41,6 @@ FC_REFLECT(deip::protocol::create_contract_agreement_operation,
   (hash)
   (start_time)
   (end_time)
+  (terms)
   (extensions)
 )
