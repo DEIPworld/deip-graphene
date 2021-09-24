@@ -28,6 +28,9 @@ public:
 
     const bool exists(const external_id_type& external_id) const;
     const optional_ref_type get_if_exists(const external_id_type& id) const;
+
+    const contract_agreement_object& accept_by(const contract_agreement_object& contract,
+                                               const account_name_type& party);
 };
 
 } // namespace chain
