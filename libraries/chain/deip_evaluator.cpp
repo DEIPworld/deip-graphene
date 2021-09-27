@@ -2396,7 +2396,7 @@ void create_contract_agreement_evaluator::do_apply(const create_contract_agreeme
     if (op.end_time.valid())
     {
         FC_ASSERT(*op.end_time > start_time,
-          "Start time${1} must be less than end time ${2}",
+          "Start time ${1} must be less than end time ${2}",
           ("1", start_time)("2", *op.end_time));
     }
 
@@ -2429,7 +2429,7 @@ void accept_contract_agreement_evaluator::do_apply(const accept_contract_agreeme
               ("1", op.external_id)("2", op.party));
 
     const auto block_time = _db.head_block_time();
-    FC_ASSERT(contract.start_time < block_time,
+    FC_ASSERT(contract.start_time <= block_time,
               "Contract agreement ${1} is not active. (start_time = ${2}, block_time = ${3}",
               ("1", op.external_id)("2", contract.start_time)("3", block_time));
 
