@@ -2419,13 +2419,25 @@ void accept_contract_agreement_evaluator::do_apply(const accept_contract_agreeme
     FC_ASSERT(contract_opt_ref.valid(), "Contract agreement ${1} does not exist", ("1", op.external_id));
 
     const auto& contract = contract_opt_ref->get();
-    const auto it = contract.parties.find(op.party);
-    FC_ASSERT(it != contract.parties.end(),
-              "Party ${2} is not listed in contract agreement ${1}",
-              ("1", op.external_id)("2", op.party));
+    const auto itEnd = contract.parties.end();
+    bool found = false;
+    for (auto it = contract.parties.begin(); it != itEnd; ++it)
+    {
+        FC_ASSERT(it->second != acceptance_status::Rejected,
+                  "Contract agreement ${1} is rejected by ${2}",
+                  ("1", op.external_id)("2", it->first));
 
-    FC_ASSERT(it->second != acceptance_status::Accepted,
-              "Contract agreement ${1} is already accepted by ${2}",
+        if (it->first == op.party)
+        {
+            found = true;
+            FC_ASSERT(it->second == acceptance_status::NotAccepted,
+                      "Contract agreement ${1} is already accepted by ${2}",
+                      ("1", op.external_id)("2", op.party));
+        }
+    }
+
+    FC_ASSERT(found,
+              "Party ${2} is not listed in contract agreement ${1}",
               ("1", op.external_id)("2", op.party));
 
     const auto block_time = _db.head_block_time();
