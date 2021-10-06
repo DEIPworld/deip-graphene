@@ -102,5 +102,16 @@ const contract_agreement_object& dbs_contract_agreement::accept_by(
     return contract;
 }
 
+const contract_agreement_object& dbs_contract_agreement::reject_by(
+        const contract_agreement_object& contract,
+        const account_name_type& party)
+{
+    db_impl().modify(contract, [&](contract_agreement_object& o) {
+        o.parties[party] = acceptance_status::Rejected;
+    });
+
+    return contract;
+}
+
 } //namespace chain
 } //namespace deip

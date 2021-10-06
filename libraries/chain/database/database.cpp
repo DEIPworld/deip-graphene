@@ -1765,6 +1765,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_research_license_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_contract_agreement_evaluator>();
     _my->_evaluator_registry.register_evaluator<accept_contract_agreement_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_contract_agreement_evaluator>();
 }
 
 void database::initialize_indexes()

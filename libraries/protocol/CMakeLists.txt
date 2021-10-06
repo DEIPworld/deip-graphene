@@ -43,6 +43,7 @@ add_library( deip_protocol
              operations/reserve_asset_operation.cpp
              operations/create_contract_agreement.cpp
              operations/accept_contract_agreement.cpp
+             operations/reject_contract_agreement_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp

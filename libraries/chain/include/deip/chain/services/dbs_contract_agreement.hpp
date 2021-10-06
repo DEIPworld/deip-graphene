@@ -32,6 +32,8 @@ public:
 
     const contract_agreement_object& accept_by(const contract_agreement_object& contract,
                                                const account_name_type& party);
+    const contract_agreement_object& reject_by(const contract_agreement_object& contract,
+                                               const account_name_type& party);
 };
 
 } // namespace chain
