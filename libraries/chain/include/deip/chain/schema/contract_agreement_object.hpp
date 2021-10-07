@@ -11,7 +11,8 @@ using deip::protocol::external_id_type;
 enum class acceptance_status: uint8_t
 {
     NotAccepted,
-    Accepted
+    Accepted,
+    Rejected
 };
 
 class contract_agreement_object : public object<contract_agreement_object_type, contract_agreement_object>
@@ -82,4 +83,5 @@ CHAINBASE_SET_INDEX_TYPE(deip::chain::contract_agreement_object, deip::chain::co
 FC_REFLECT_ENUM(deip::chain::acceptance_status,
   (NotAccepted)
   (Accepted)
+  (Rejected)
 )

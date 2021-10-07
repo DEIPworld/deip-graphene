@@ -40,6 +40,7 @@
 #include <deip/protocol/operations/reserve_asset_operation.hpp>
 #include <deip/protocol/operations/create_contract_agreement.hpp>
 #include <deip/protocol/operations/accept_contract_agreement.hpp>
+#include <deip/protocol/operations/reject_contract_agreement_operation.hpp>
 
 namespace deip {
 namespace protocol {
