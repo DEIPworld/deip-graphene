@@ -28,7 +28,7 @@ const contract_agreement_object& dbs_contract_agreement::create(
 
         for (const auto& party: parties)
         {
-            c_o.parties[party] = acceptance_status::NotAccepted;
+            c_o.parties[party] = static_cast<uint8_t>(acceptance_status::NotAccepted);
         }
 
         fc::from_string(c_o.hash, hash);
@@ -96,7 +96,7 @@ const contract_agreement_object& dbs_contract_agreement::accept_by(
         const account_name_type& party)
 {
     db_impl().modify(contract, [&](contract_agreement_object& o) {
-        o.parties[party] = acceptance_status::Accepted;
+        o.parties[party] = static_cast<uint8_t>(acceptance_status::Accepted);
     });
 
     return contract;
@@ -107,7 +107,7 @@ const contract_agreement_object& dbs_contract_agreement::reject_by(
         const account_name_type& party)
 {
     db_impl().modify(contract, [&](contract_agreement_object& o) {
-        o.parties[party] = acceptance_status::Rejected;
+        o.parties[party] = static_cast<uint8_t>(acceptance_status::Rejected);
     });
 
     return contract;

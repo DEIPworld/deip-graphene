@@ -2423,14 +2423,14 @@ void accept_contract_agreement_evaluator::do_apply(const accept_contract_agreeme
     bool found = false;
     for (auto it = contract.parties.begin(); it != itEnd; ++it)
     {
-        FC_ASSERT(it->second != acceptance_status::Rejected,
+        FC_ASSERT(it->second != static_cast<uint8_t>(acceptance_status::Rejected),
                   "Contract agreement ${1} is rejected by ${2}",
                   ("1", op.external_id)("2", it->first));
 
         if (it->first == op.party)
         {
             found = true;
-            FC_ASSERT(it->second == acceptance_status::NotAccepted,
+            FC_ASSERT(it->second == static_cast<uint8_t>(acceptance_status::NotAccepted),
                       "Contract agreement ${1} is already accepted by ${2}",
                       ("1", op.external_id)("2", op.party));
         }
@@ -2470,14 +2470,14 @@ void reject_contract_agreement_evaluator::do_apply(const reject_contract_agreeme
     bool found = false;
     for (auto it = contract.parties.begin(); it != itEnd; ++it)
     {
-        FC_ASSERT(it->second != acceptance_status::Rejected,
+        FC_ASSERT(it->second != static_cast<uint8_t>(acceptance_status::Rejected),
                   "Contract agreement ${1} is rejected by ${2}",
                   ("1", op.external_id)("2", it->first));
 
         if (it->first == op.party)
         {
             found = true;
-            FC_ASSERT(it->second == acceptance_status::NotAccepted,
+            FC_ASSERT(it->second == static_cast<uint8_t>(acceptance_status::NotAccepted),
                       "Contract agreement ${1} is already accepted by ${2}",
                       ("1", op.external_id)("2", op.party));
         }

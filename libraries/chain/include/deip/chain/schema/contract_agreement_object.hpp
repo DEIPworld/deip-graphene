@@ -32,7 +32,7 @@ public:
     external_id_type external_id;
     account_name_type creator;
 
-    flat_map<account_name_type, acceptance_status> parties;
+    flat_map<account_name_type, uint8_t> parties;
     fc::shared_string hash;
 
     fc::time_point_sec created_at;
